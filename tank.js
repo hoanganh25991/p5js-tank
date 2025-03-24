@@ -2,7 +2,7 @@
 
 // Gameplay Mechanics
 const ENEMIES_TO_KILL = 1000; // Number of enemies to kill before pausing
-const MAX_ENEMIES = 1; // Maximum number of enemies at any time
+const MAX_ENEMIES = 50; // Maximum number of enemies at any time
 
 // Bullet and Skill Properties
 
