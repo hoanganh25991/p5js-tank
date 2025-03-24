@@ -2,7 +2,7 @@
 
 // Gameplay Mechanics
 const ENEMIES_TO_KILL = 1000; // Number of enemies to kill before pausing
-const MAX_ENEMIES = 50; // Maximum number of enemies at any time
+const MAX_ENEMIES = 1; // Maximum number of enemies at any time
 
 // Bullet and Skill Properties
 
@@ -157,9 +157,6 @@ function draw() {
   // Update the global state if needed
   updateWindowState();
 
-  // Update turret angle
-  updateTurretAngle();
-
   // Check collisions
   checkCollisions();
 
@@ -193,16 +190,6 @@ function drawTank() {
   fill(100); // Set a color for the barrel
   cylinder(5, 40); // Create a cylinder for the barrel
   pop();
-}
-
-function updateTurretAngle() {
-  let nearestEnemies = findNearestEnemies(1);
-  if (nearestEnemies.length > 0) {
-    let target = nearestEnemies[0];
-    let dx = target.x - playerX;
-    let dz = target.z - playerZ;
-    turretAngle = atan2(dz, dx);
-  }
 }
 
 function drawAimLine(target) {
@@ -243,6 +230,7 @@ function fireBullet() {
     let dx = target.x - playerX;
     let dz = target.z - playerZ;
     let angle = atan2(dz, dx);
+    turretAngle = angle
     bullets.push({
       x: playerX,
       y: 0,
