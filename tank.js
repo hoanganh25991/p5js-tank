@@ -48,6 +48,7 @@ let zoomLevel = 0.2; // Default zoom level
 let playerAngle = 0; // Tank body angle
 let turretAngle = 0; // Turret angle
 let cameraAngle = 0; // Camera angle
+let targetTurretAngle = 0;
 
 let rotatingLeft = false;
 let rotatingRight = false;
@@ -157,6 +158,8 @@ function draw() {
   // Update the global state if needed
   updateWindowState();
 
+  updateTurretAngle();
+
   // Check collisions
   checkCollisions();
 
@@ -230,7 +233,7 @@ function fireBullet() {
     let dx = target.x - playerX;
     let dz = target.z - playerZ;
     let angle = atan2(dz, dx);
-    turretAngle = angle
+    targetTurretAngle = -atan2(dz, dx) - HALF_PI;
     bullets.push({
       x: playerX,
       y: 0,
@@ -243,6 +246,10 @@ function fireBullet() {
     // Draw aim line for the bullet
     drawAimLine(target);
   }
+}
+
+function updateTurretAngle() {
+  turretAngle = lerp(turretAngle, targetTurretAngle, 0.1);
 }
 
 function drawBullets() {
