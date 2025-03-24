@@ -71,18 +71,10 @@ function preload() {
   groundTexture = loadImage("./photo-1422651355218-53453822ebb8.jpg"); // Ground texture
   tankTexture = loadImage("./photo-1539538507524-eab6a4184604.jpg"); // Tank texture
   skillSoundMap = {
-    a: loadSound(
-      "./steampunk-weapon-single-shot-188051.mp3"
-    ),
-    s: loadSound(
-      "./barrett-m107-sound-effect-245967.mp3"
-    ),
-    d: loadSound(
-      "./gun-shots-from-a-distance-23-39722.mp3"
-    ),
-    f: loadSound(
-      "./gun-shot-sound-effect-224087.mp3"
-    ),
+    a: loadSound("./steampunk-weapon-single-shot-188051.mp3"),
+    s: loadSound("./barrett-m107-sound-effect-245967.mp3"),
+    d: loadSound("./gun-shots-from-a-distance-23-39722.mp3"),
+    f: loadSound("./gun-shot-sound-effect-224087.mp3"),
   };
   myFont = loadFont("./opensans-light.ttf");
 }
@@ -122,8 +114,6 @@ function draw() {
   // Lighting
   ambientLight(75); // Ánh sáng môi trường
   directionalLight(255, 255, 255, 0, 1, -1);
-
-
 
   // Draw ground
   push();
@@ -167,6 +157,9 @@ function draw() {
   // Update the global state if needed
   updateWindowState();
 
+  // Update turret angle
+  updateTurretAngle();
+
   // Check collisions
   checkCollisions();
 
@@ -194,7 +187,22 @@ function drawTank() {
   translate(0, -15, 0);
   rotateY(turretAngle - playerAngle); // Rotate turret independently
   box(30, 10, 30);
+  // Gun barrel
+  translate(0, 0, -20); // Position the barrel at the front of the turret
+  rotateX(HALF_PI); // Rotate the barrel 90 degrees to lie horizontally
+  fill(100); // Set a color for the barrel
+  cylinder(5, 40); // Create a cylinder for the barrel
   pop();
+}
+
+function updateTurretAngle() {
+  let nearestEnemies = findNearestEnemies(1);
+  if (nearestEnemies.length > 0) {
+    let target = nearestEnemies[0];
+    let dx = target.x - playerX;
+    let dz = target.z - playerZ;
+    turretAngle = atan2(dz, dx);
+  }
 }
 
 function drawAimLine(target) {
