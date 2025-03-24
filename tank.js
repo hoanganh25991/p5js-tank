@@ -41,7 +41,7 @@ let skills = [];
 let moving = { left: false, right: false, up: false, down: false };
 let playerHealth = 1000; // Default health
 let enemiesKilled = 0;
-let gamePaused = false;
+let gamePaused = true;
 let tankSize = 75; // Tank size
 let zoomLevel = 0.2; // Default zoom level
 
