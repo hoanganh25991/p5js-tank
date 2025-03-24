@@ -42,7 +42,7 @@ let moving = { left: false, right: false, up: false, down: false };
 let playerHealth = 1000; // Default health
 let enemiesKilled = 0;
 let gamePaused = false;
-let tankSize = 50; // Tank size
+let tankSize = 75; // Tank size
 let zoomLevel = 0.2; // Default zoom level
 
 let playerAngle = 0; // Tank body angle
@@ -55,6 +55,7 @@ let rotatingRight = false;
 let cameraHeight = MAX_CAMERA_HEIGHT - 150; // Initial camera height
 let increasingHeight = false;
 let decreasingHeight = false;
+let skillSoundMap = {};
 
 // Expose the game state to the global window object
 window.state = {
@@ -65,8 +66,22 @@ window.state = {
 };
 
 function preload() {
-  groundTexture = loadImage("./b2haIR6.jpg"); // Ground texture
-  tankTexture = loadImage("./dPWLIg8.jpg"); // Tank texture
+  groundTexture = loadImage("./photo-1422651355218-53453822ebb8.jpeg"); // Ground texture
+  tankTexture = loadImage("./photo-1539538507524-eab6a4184604.jpeg"); // Tank texture
+  skillSoundMap = {
+    a: loadSound(
+      "https://cdn.pixabay.com/download/audio/2024/01/25/audio_2bd117a9ad.mp3"
+    ),
+    s: loadSound(
+      "https://cdn.pixabay.com/download/audio/2024/09/30/audio_eb54908010.mp3"
+    ),
+    d: loadSound(
+      "https://cdn.pixabay.com/download/audio/2024/11/18/audio_d762bf50fc.mp3"
+    ),
+    f: loadSound(
+      "https://cdn.pixabay.com/download/audio/2024/07/12/audio_45a5479842.mp3"
+    ),
+  };
 }
 
 function setup() {
@@ -319,16 +334,16 @@ function drawEnemies() {
 
 function updatePlayerPosition() {
   if (moving.left) {
-    playerX -= PLAYER_MOVE_SPEED;
+    playerZ += PLAYER_MOVE_SPEED;
   }
   if (moving.right) {
-    playerX += PLAYER_MOVE_SPEED;
+    playerZ -= PLAYER_MOVE_SPEED;
   }
   if (moving.up) {
-    playerZ += PLAYER_MOVE_SPEED; // Corrected to move forward
+    playerX -= PLAYER_MOVE_SPEED;
   }
   if (moving.down) {
-    playerZ -= PLAYER_MOVE_SPEED; // Corrected to move backward
+    playerX += PLAYER_MOVE_SPEED;
   }
 }
 
@@ -369,16 +384,16 @@ function keyPressed() {
     moving.down = true;
   } else if (key.toLowerCase() === "a") {
     // Example: Skill A with 3 targets and size factor of 1.5
-    castSkill("a", 1, 3);
+    castSkill("a", 1, 3, skillSoundMap["a"]);
   } else if (key.toLowerCase() === "s") {
     // Example: Skill S with 2 targets and size factor of 2.0
-    castSkill("s", 3, 2);
+    castSkill("s", 3, 2, skillSoundMap["s"]);
   } else if (key.toLowerCase() === "d") {
     // Example: Skill D with 4 targets and size factor of 1.2
-    castSkill("d", 10, 1);
+    castSkill("d", 10, 1, skillSoundMap["d"]);
   } else if (key.toLowerCase() === "f") {
     // Example: Skill F with 5 targets and size factor of 1.0
-    castSkill("f", 1, 7);
+    castSkill("f", 1, 7, skillSoundMap["f"]);
   } else if (key.toLowerCase() === "q") {
     rotatingLeft = true;
   } else if (key.toLowerCase() === "w") {
@@ -410,10 +425,13 @@ function keyReleased() {
   }
 }
 
-function castSkill(type, numTargets, sizeFactor) {
+function castSkill(type, numTargets, sizeFactor, skillSound) {
   console.log(
     `Casting skill ${type} with ${numTargets} targets and size factor ${sizeFactor}!`
   );
+  if (skillSound) {
+    skillSound.play();
+  }
   let targets = findNearestEnemies(numTargets); // Find the nearest enemies
 
   for (let target of targets) {
