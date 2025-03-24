@@ -11,6 +11,7 @@ const BULLET_SPEED = 8; // Speed of the player's bullets
 const ENEMY_BULLET_SPEED = 3; // Speed of the enemy's bullets
 const BULLET_MAX_DISTANCE = 1000; // Maximum distance bullets can travel
 const BULLET_FIRE_INTERVAL = 30; // Fire bullets every 500ms (30 frames at 60 FPS)
+const BULLET_SIZE = 5;
 
 // Skill Properties
 const SKILL_MAX_DISTANCE = 1000; // Maximum distance skills can travel
@@ -51,7 +52,7 @@ let cameraAngle = 0; // Camera angle
 let rotatingLeft = false;
 let rotatingRight = false;
 
-let cameraHeight = MAX_CAMERA_HEIGHT - 142; // Initial camera height
+let cameraHeight = MAX_CAMERA_HEIGHT - 112; // Initial camera height
 let increasingHeight = false;
 let decreasingHeight = false;
 let skillSoundMap = {};
@@ -119,7 +120,10 @@ function draw() {
   background(135, 206, 235); // Sky color
 
   // Lighting
+  ambientLight(75); // Ánh sáng môi trường
   directionalLight(255, 255, 255, 0, 1, -1);
+
+
 
   // Draw ground
   push();
@@ -254,8 +258,7 @@ function drawBullets() {
 
     push();
     translate(bullet.x, bullet.y, bullet.z);
-    fill(0, 0, 0); // Black for bullets
-    sphere(5);
+    sphere(BULLET_SIZE);
     pop();
 
     // Remove bullets that have traveled beyond the maximum distance
@@ -274,8 +277,7 @@ function drawEnemyBullets() {
 
     push();
     translate(bullet.x, bullet.y, bullet.z);
-    fill(255, 0, 0); // Red for enemy bullets
-    sphere(5);
+    sphere(BULLET_SIZE);
     pop();
 
     // Remove bullets that have traveled beyond the maximum distance

@@ -1,15 +1,26 @@
 /* Simple CSS Reset */
 body {
+  overflow: hidden;
   background-image: url('background.jpg'); /* Add your background image here */
   background-size: cover;
   background-position: center;
   margin: 0;
-  height: 100vh;
   padding: 0;
   display: flex;
   align-items: flex-end;
   justify-content: center;
   align-items: center;
+}
+
+/* Status Board */
+#statusBoard {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background-color: rgba(255, 255, 255, 0.8);
+  padding: 10px;
+  border-radius: 5px;
+  z-index: 10;
 }
 
 /* Start button */
