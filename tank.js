@@ -57,6 +57,7 @@ let cameraHeight = MAX_CAMERA_HEIGHT - 112; // Initial camera height
 let increasingHeight = false;
 let decreasingHeight = false;
 let skillSoundMap = {};
+let skillAngle = 0;
 
 // Expose the game state to the global window object
 window.state = {
@@ -320,6 +321,8 @@ function drawSkills() {
     );
     size = constrain(size, 10, SKILL_MAX_SIZE * skill.sizeFactor); // Ensure size does not exceed max size
 
+    skillAngle += 0.05
+    rotateY(skillAngle);
     if (skill.type === "a") {
       fill(255, 0, 0, skill.lifetime * 5);
       sphere(size);
