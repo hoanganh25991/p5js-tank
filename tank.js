@@ -66,8 +66,8 @@ window.state = {
 };
 
 function preload() {
-  groundTexture = loadImage("./photo-1422651355218-53453822ebb8.jpeg"); // Ground texture
-  tankTexture = loadImage("./photo-1539538507524-eab6a4184604.jpeg"); // Tank texture
+  groundTexture = loadImage("./photo-1422651355218-53453822ebb8.jpg"); // Ground texture
+  tankTexture = loadImage("./photo-1539538507524-eab6a4184604.jpg"); // Tank texture
   skillSoundMap = {
     a: loadSound(
       "https://cdn.pixabay.com/download/audio/2024/01/25/audio_2bd117a9ad.mp3"
