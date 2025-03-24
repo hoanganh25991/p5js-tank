@@ -1,13 +1,38 @@
 /* Simple CSS Reset */
 body {
+  background-image: url('background.jpg'); /* Add your background image here */
+  background-size: cover;
+  background-position: center;
   margin: 0;
+  height: 100vh;
   padding: 0;
   display: flex;
-  justify-content: center;
   align-items: flex-end;
-  height: 100vh;
-  background-color: #f0f0f0;
+  justify-content: center;
+  align-items: center;
 }
+
+/* Start button */
+.start-button {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 20px 40px;
+  font-size: 24px;
+  cursor: pointer;
+  user-select: none;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  z-index: 10;
+}
+
+.start-button:active {
+  background-color: #45a049;
+}
+
 
 /* Github */
 .github-link {
@@ -54,7 +79,7 @@ body {
   width: 50px;
   font-size: 18px;
   text-transform: uppercase;
-  background-color: #fff; /* Nền trắng chỉ cho các nút */
+  background-color: #fff;
   border: 2px solid #ccc;
   border-radius: 5px;
   cursor: pointer;
@@ -62,8 +87,11 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
+  user-select: none;
+  cursor: pointer;
 }
 
 .key:active {
-  background-color: #ddd;
+  /* background-color: #446E5C; */
+  background-color: #1b2c24;
 }

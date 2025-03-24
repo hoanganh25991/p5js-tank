@@ -41,7 +41,6 @@ let skills = [];
 let moving = { left: false, right: false, up: false, down: false };
 let playerHealth = 1000; // Default health
 let enemiesKilled = 0;
-let gamePaused = true;
 let tankSize = 75; // Tank size
 let zoomLevel = 0.2; // Default zoom level
 
@@ -52,7 +51,7 @@ let cameraAngle = 0; // Camera angle
 let rotatingLeft = false;
 let rotatingRight = false;
 
-let cameraHeight = MAX_CAMERA_HEIGHT - 150; // Initial camera height
+let cameraHeight = MAX_CAMERA_HEIGHT - 142; // Initial camera height
 let increasingHeight = false;
 let decreasingHeight = false;
 let skillSoundMap = {};
@@ -65,33 +64,39 @@ window.state = {
   cameraAngle,
 };
 
+window.gamePaused = true;
+
 function preload() {
   groundTexture = loadImage("./photo-1422651355218-53453822ebb8.jpg"); // Ground texture
   tankTexture = loadImage("./photo-1539538507524-eab6a4184604.jpg"); // Tank texture
   skillSoundMap = {
     a: loadSound(
-      "https://cdn.pixabay.com/download/audio/2024/01/25/audio_2bd117a9ad.mp3"
+      "./steampunk-weapon-single-shot-188051.mp3"
     ),
     s: loadSound(
-      "https://cdn.pixabay.com/download/audio/2024/09/30/audio_eb54908010.mp3"
+      "./barrett-m107-sound-effect-245967.mp3"
     ),
     d: loadSound(
-      "https://cdn.pixabay.com/download/audio/2024/11/18/audio_d762bf50fc.mp3"
+      "./gun-shots-from-a-distance-23-39722.mp3"
     ),
     f: loadSound(
-      "https://cdn.pixabay.com/download/audio/2024/07/12/audio_45a5479842.mp3"
+      "./gun-shot-sound-effect-224087.mp3"
     ),
   };
+  myFont = loadFont("./opensans-light.ttf");
 }
 
 function setup() {
   createCanvas(windowWidth, windowHeight, WEBGL);
   spawnEnemies(10); // Spawn 10 enemies
+  textFont(myFont); // Set the font
+  textSize(32); // Set the text size
+  textAlign(CENTER, CENTER); // Align text to center
 }
 
 function draw() {
-  if (gamePaused) {
-    displayPauseScreen();
+  if (window.gamePaused) {
+    updateWindowState();
     return;
   }
 
@@ -374,6 +379,9 @@ function updateEnemiesPosition() {
 }
 
 function keyPressed() {
+  if (window.gamePaused) {
+    return;
+  }
   if (keyCode === LEFT_ARROW) {
     moving.left = true;
   } else if (keyCode === RIGHT_ARROW) {
@@ -406,6 +414,9 @@ function keyPressed() {
 }
 
 function keyReleased() {
+  if (window.gamePaused) {
+    return;
+  }
   if (keyCode === LEFT_ARROW) {
     moving.left = false;
   } else if (keyCode === RIGHT_ARROW) {
@@ -426,9 +437,9 @@ function keyReleased() {
 }
 
 function castSkill(type, numTargets, sizeFactor, skillSound) {
-  console.log(
-    `Casting skill ${type} with ${numTargets} targets and size factor ${sizeFactor}!`
-  );
+  if (window.gamePaused) {
+    return;
+  }
   if (skillSound) {
     skillSound.play();
   }
@@ -494,7 +505,7 @@ function checkCollisions() {
           enemies.splice(j, 1);
           enemiesKilled++;
           if (enemiesKilled >= ENEMIES_TO_KILL) {
-            gamePaused = true;
+            window.gamePaused = true;
           } else {
             spawnEnemies(1);
           }
@@ -525,7 +536,7 @@ function checkCollisions() {
           enemies.splice(j, 1);
           enemiesKilled++;
           if (enemiesKilled >= ENEMIES_TO_KILL) {
-            gamePaused = true;
+            window.gamePaused = true;
           } else {
             spawnEnemies(1);
           }
@@ -542,7 +553,7 @@ function checkCollisions() {
       playerHealth -= 1;
       enemyBullets.splice(i, 1);
       if (playerHealth <= 0) {
-        gamePaused = true;
+        window.gamePaused = true;
       }
     }
   }
@@ -557,13 +568,4 @@ function isColliding(skill, skillSize, enemy) {
     skill.z - skillSize / 2 < enemy.z + 20 &&
     skill.z + skillSize / 2 > enemy.z - 20
   );
-}
-
-function displayPauseScreen() {
-  push();
-  fill(255);
-  textSize(40);
-  textAlign(CENTER, CENTER);
-  text("Game Paused", 0, 0);
-  pop();
 }
