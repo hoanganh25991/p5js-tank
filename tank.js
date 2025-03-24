@@ -126,6 +126,7 @@ function draw() {
   pop();
 
   // Move camera with player and apply zoom
+  zoomLevel = getDynamicZoomLevel();
   let camX = playerX + (cos(cameraAngle) * 200) / zoomLevel;
   let camZ = playerZ + (sin(cameraAngle) * 200) / zoomLevel;
   // Adjust camera height and ensure it rotates around the tank
@@ -167,6 +168,16 @@ function draw() {
   if (frameCount % BULLET_FIRE_INTERVAL === 0) {
     fireBullet();
   }
+}
+
+function getDynamicZoomLevel() {
+  const screenWidth = windowWidth;
+
+  if (screenWidth < 1024) {
+    return 0.1;
+  }
+
+  return 0.2;
 }
 
 function updateWindowState() {
