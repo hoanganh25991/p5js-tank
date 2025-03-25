@@ -56,9 +56,32 @@ let rotatingRight = false;
 let cameraHeight = MAX_CAMERA_HEIGHT - 112; // Initial camera height
 let increasingHeight = false;
 let decreasingHeight = false;
+
 let skillSoundMap = {};
 let skillAngle = 0;
+
 let shurikenModel;
+
+let casting = {
+  a: false,
+  s: false,
+  d: false,
+  f: false,
+};
+
+let lastCastTime = {
+  a: 0,
+  s: 0,
+  d: 0,
+  f: 0,
+};
+
+const cooldown = {
+  a: 500, // 500 milliseconds
+  s: 500,
+  d: 500,
+  f: 500,
+};
 
 // Expose the game state to the global window object
 window.state = {
@@ -80,7 +103,7 @@ function preload() {
     f: loadSound("gun-shot-sound-effect-224087.mp3"),
   };
   myFont = loadFont("opensans-light.ttf");
-  shurikenModel = loadModel('shuriken.obj', true);
+  shurikenModel = loadModel("shuriken.obj", true);
 }
 
 function setup() {
@@ -149,6 +172,9 @@ function draw() {
 
   // Draw skills
   drawSkills();
+
+  // Draw cast skills
+  drawCastSkills();
 
   // Draw enemies
   drawEnemies();
@@ -323,7 +349,7 @@ function drawSkills() {
     );
     size = constrain(size, 10, SKILL_MAX_SIZE * skill.sizeFactor); // Ensure size does not exceed max size
 
-    skillAngle += 0.05
+    skillAngle += 0.05;
     rotateY(skillAngle);
     if (skill.type === "a") {
       fill(255, 0, 0, skill.lifetime * 5);
@@ -336,7 +362,7 @@ function drawSkills() {
       cone(size, size * 2);
     } else if (skill.type === "f") {
       fill(255, 255, 0, skill.lifetime * 5);
-      drawShuriken(size / 100 * 1.5);
+      drawShuriken((size / 100) * 1.5);
     }
     pop();
 
@@ -344,6 +370,27 @@ function drawSkills() {
     if (skill.distanceTraveled > SKILL_MAX_DISTANCE || skill.lifetime <= 0) {
       skills.splice(i, 1);
     }
+  }
+}
+
+function drawCastSkills() {
+  let currentTime = millis();
+
+  if (casting.a && currentTime - lastCastTime.a >= cooldown.a) {
+    castSkill("a", 1, 3, skillSoundMap["a"]);
+    lastCastTime.a = currentTime;
+  }
+  if (casting.s && currentTime - lastCastTime.s >= cooldown.s) {
+    castSkill("s", 3, 2, skillSoundMap["s"]);
+    lastCastTime.s = currentTime;
+  }
+  if (casting.d && currentTime - lastCastTime.d >= cooldown.d) {
+    castSkill("d", 10, 1, skillSoundMap["d"]);
+    lastCastTime.d = currentTime;
+  }
+  if (casting.f && currentTime - lastCastTime.f >= cooldown.f) {
+    castSkill("f", 1, 7, skillSoundMap["f"]);
+    lastCastTime.f = currentTime;
   }
 }
 
@@ -416,17 +463,13 @@ function keyPressed() {
   } else if (keyCode === DOWN_ARROW) {
     moving.down = true;
   } else if (key.toLowerCase() === "a") {
-    // Example: Skill A with 3 targets and size factor of 1.5
-    castSkill("a", 1, 3, skillSoundMap["a"]);
+    casting.a = true;
   } else if (key.toLowerCase() === "s") {
-    // Example: Skill S with 2 targets and size factor of 2.0
-    castSkill("s", 3, 2, skillSoundMap["s"]);
+    casting.s = true;
   } else if (key.toLowerCase() === "d") {
-    // Example: Skill D with 4 targets and size factor of 1.2
-    castSkill("d", 10, 1, skillSoundMap["d"]);
+    casting.d = true;
   } else if (key.toLowerCase() === "f") {
-    // Example: Skill F with 5 targets and size factor of 1.0
-    castSkill("f", 1, 7, skillSoundMap["f"]);
+    casting.f = true;
   } else if (key.toLowerCase() === "q") {
     rotatingLeft = true;
   } else if (key.toLowerCase() === "w") {
@@ -450,6 +493,14 @@ function keyReleased() {
     moving.up = false;
   } else if (keyCode === DOWN_ARROW) {
     moving.down = false;
+  } else if (key.toLowerCase() === "a") {
+    casting.a = false;
+  } else if (key.toLowerCase() === "s") {
+    casting.s = false;
+  } else if (key.toLowerCase() === "d") {
+    casting.d = false;
+  } else if (key.toLowerCase() === "f") {
+    casting.f = false;
   } else if (key.toLowerCase() === "q") {
     rotatingLeft = false;
   } else if (key.toLowerCase() === "w") {
