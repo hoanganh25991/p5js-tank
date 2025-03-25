@@ -58,6 +58,7 @@ let increasingHeight = false;
 let decreasingHeight = false;
 let skillSoundMap = {};
 let skillAngle = 0;
+let shurikenModel;
 
 // Expose the game state to the global window object
 window.state = {
@@ -70,15 +71,16 @@ window.state = {
 window.gamePaused = true;
 
 function preload() {
-  groundTexture = loadImage("./photo-1422651355218-53453822ebb8.jpg"); // Ground texture
-  tankTexture = loadImage("./photo-1539538507524-eab6a4184604.jpg"); // Tank texture
+  groundTexture = loadImage("photo-1422651355218-53453822ebb8.jpg"); // Ground texture
+  tankTexture = loadImage("photo-1539538507524-eab6a4184604.jpg"); // Tank texture
   skillSoundMap = {
-    a: loadSound("./steampunk-weapon-single-shot-188051.mp3"),
-    s: loadSound("./barrett-m107-sound-effect-245967.mp3"),
-    d: loadSound("./gun-shots-from-a-distance-23-39722.mp3"),
-    f: loadSound("./gun-shot-sound-effect-224087.mp3"),
+    a: loadSound("steampunk-weapon-single-shot-188051.mp3"),
+    s: loadSound("barrett-m107-sound-effect-245967.mp3"),
+    d: loadSound("gun-shots-from-a-distance-23-39722.mp3"),
+    f: loadSound("gun-shot-sound-effect-224087.mp3"),
   };
-  myFont = loadFont("./opensans-light.ttf");
+  myFont = loadFont("opensans-light.ttf");
+  shurikenModel = loadModel('shuriken.obj', true);
 }
 
 function setup() {
@@ -334,8 +336,7 @@ function drawSkills() {
       cone(size, size * 2);
     } else if (skill.type === "f") {
       fill(255, 255, 0, skill.lifetime * 5);
-      rotateX(HALF_PI); // Align torus with aim line
-      torus(size, size / 3);
+      drawShuriken(size / 100 * 1.5);
     }
     pop();
 
@@ -344,6 +345,11 @@ function drawSkills() {
       skills.splice(i, 1);
     }
   }
+}
+
+function drawShuriken(size) {
+  scale(size);
+  model(shurikenModel);
 }
 
 function drawEnemies() {
