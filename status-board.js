@@ -1,6 +1,6 @@
 function updateStatusBoard() {
     const statusBoard = document.getElementById('statusBoard');
-    const { playerHealth, enemiesKilled, cameraHeight, cameraAngle, zoomLevel } = window.state;
+    const { playerHealth, enemiesKilled, cameraHeight, cameraAngle, zoomLevel } = window.getState();
     // Update the status board content
     statusBoard.innerHTML = `
       <strong>Status Board</strong><br>

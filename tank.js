@@ -14,10 +14,10 @@ const BULLET_FIRE_INTERVAL = 30; // Fire bullets every 500ms (30 frames at 60 FP
 const BULLET_SIZE = 5;
 
 // Skill Properties
-const SKILL_MAX_DISTANCE = 1000; // Maximum distance skills can travel
-const SKILL_SPEED = 8; // Speed of the skills
-const SKILL_EXPAND_DISTANCE = 700; // Distance after which the skill expands
-const SKILL_MAX_SIZE = 30; // Maximum size of the skill
+const SKILL_SPEED = 12; // Speed of the skills
+const SKILL_BASE_SIZE = 30; // Base size of the skill
+const SKILL_MAX_DISTANCE = 2000; // Maximum distance skills can travel
+const SKILL_EXPAND_DISTANCE = 0; // Distance after which the skill expands
 
 // Enemy Settings
 const ENEMY_SHOOTING_DISTANCE = 500; // Increased maximum distance for enemies to shoot
@@ -36,7 +36,8 @@ const PLAYER_MOVE_SPEED = 6; // Speed of the player's tank
 const ENEMY_MOVE_SPEED = 2; // Speed of the enemies
 
 // Visual Aids
-const AIM_LINE_LENGTH = 1000; // Configurable length of the aim line
+const AIM_LINE_LENGTH = 2000; // Configurable length of the aim line
+
 let playerX = 0;
 let playerZ = 0;
 let bullets = [];
@@ -48,6 +49,7 @@ let playerHealth = 1000; // Default health
 let enemiesKilled = 0;
 let tankSize = 75; // Tank size
 let zoomLevel = 0.2; // Default zoom level
+let gamePaused = true;
 
 let playerAngle = 0; // Tank body angle
 let turretAngle = 0; // Turret angle
@@ -90,16 +92,20 @@ const cooldown = {
   f: 500,
 };
 
-// Expose the game state to the global window object
-window.state = {
-  playerHealth,
-  enemiesKilled,
-  cameraHeight,
-  cameraAngle,
-  zoomLevel,
+window.getState = function () {
+  return {
+    playerHealth,
+    enemiesKilled,
+    cameraHeight,
+    cameraAngle,
+    zoomLevel,
+    gamePaused,
+  };
 };
 
-window.gamePaused = true;
+window.setState = function (newState) {
+  gamePaused = newState && newState.gamePaused;
+};
 
 function preload() {
   groundTexture = loadImage("photo-1422651355218-53453822ebb8.jpg"); // Ground texture
@@ -125,8 +131,7 @@ function setup() {
 }
 
 function draw() {
-  if (window.gamePaused) {
-    updateWindowState();
+  if (gamePaused) {
     return;
   }
 
@@ -203,9 +208,6 @@ function draw() {
   // Update enemies position
   updateEnemiesPosition();
 
-  // Update the global state if needed
-  updateWindowState();
-
   updateTurretAngle();
 
   // Check collisions
@@ -225,14 +227,6 @@ function getDynamicZoomLevel() {
   }
 
   return 0.2;
-}
-
-function updateWindowState() {
-  window.state.playerHealth = playerHealth;
-  window.state.enemiesKilled = enemiesKilled;
-  window.state.cameraHeight = cameraHeight;
-  window.state.cameraAngle = cameraAngle;
-  window.state.zoomLevel = zoomLevel;
 }
 
 function drawTank() {
@@ -365,9 +359,9 @@ function drawSkills() {
       0,
       SKILL_EXPAND_DISTANCE,
       10,
-      SKILL_MAX_SIZE * skill.sizeFactor // Use the dynamic size factor
+      SKILL_BASE_SIZE * skill.sizeFactor // Use the dynamic size factor
     );
-    size = constrain(size, 10, SKILL_MAX_SIZE * skill.sizeFactor); // Ensure size does not exceed max size
+    size = constrain(size, 10, SKILL_BASE_SIZE * skill.sizeFactor); // Ensure size does not exceed max size
 
     rotateY(skillAngle);
     if (skill.type === "a") {
@@ -381,7 +375,7 @@ function drawSkills() {
       cone(size, size * 2);
     } else if (skill.type === "f") {
       fill(255, 255, 0, skill.lifetime * 5);
-      drawShuriken((size / 100) * 1.5);
+      drawShuriken((size / 100) * 1);
     }
     pop();
 
@@ -400,7 +394,7 @@ function drawCastSkills() {
     lastCastTime.a = currentTime;
   }
   if (casting.s && currentTime - lastCastTime.s >= cooldown.s) {
-    castSkill("s", 3, 2, skillSoundMap["s"]);
+    castSkill("s", 3, 1, skillSoundMap["s"]);
     lastCastTime.s = currentTime;
   }
   if (casting.d && currentTime - lastCastTime.d >= cooldown.d) {
@@ -408,7 +402,7 @@ function drawCastSkills() {
     lastCastTime.d = currentTime;
   }
   if (casting.f && currentTime - lastCastTime.f >= cooldown.f) {
-    castSkill("f", 1, 7, skillSoundMap["f"]);
+    castSkill("f", 1, 10, skillSoundMap["f"]);
     lastCastTime.f = currentTime;
   }
 }
@@ -486,7 +480,7 @@ function updateEnemiesPosition() {
 }
 
 function keyPressed() {
-  if (window.gamePaused) {
+  if (gamePaused) {
     return;
   }
   if (keyCode === LEFT_ARROW) {
@@ -521,7 +515,7 @@ function keyPressed() {
 }
 
 function keyReleased() {
-  if (window.gamePaused) {
+  if (gamePaused) {
     return;
   }
   if (keyCode === LEFT_ARROW) {
@@ -556,7 +550,7 @@ function keyReleased() {
 }
 
 function castSkill(type, numTargets, sizeFactor, skillSound) {
-  if (window.gamePaused) {
+  if (gamePaused) {
     return;
   }
   if (skillSound) {
@@ -624,7 +618,7 @@ function checkCollisions() {
           enemies.splice(j, 1);
           enemiesKilled++;
           if (enemiesKilled >= ENEMIES_TO_KILL) {
-            window.gamePaused = true;
+            gamePaused = true;
           } else {
             spawnEnemies(1);
           }
@@ -642,9 +636,9 @@ function checkCollisions() {
       0,
       SKILL_EXPAND_DISTANCE,
       10,
-      SKILL_MAX_SIZE * skill.sizeFactor
+      SKILL_BASE_SIZE * skill.sizeFactor
     );
-    skillSize = constrain(skillSize, 10, SKILL_MAX_SIZE * skill.sizeFactor); // Ensure size does not exceed max size
+    skillSize = constrain(skillSize, 10, SKILL_BASE_SIZE * skill.sizeFactor); // Ensure size does not exceed max size
 
     for (let j = enemies.length - 1; j >= 0; j--) {
       let enemy = enemies[j];
@@ -655,7 +649,7 @@ function checkCollisions() {
           enemies.splice(j, 1);
           enemiesKilled++;
           if (enemiesKilled >= ENEMIES_TO_KILL) {
-            window.gamePaused = true;
+            gamePaused = true;
           } else {
             spawnEnemies(1);
           }
@@ -672,7 +666,7 @@ function checkCollisions() {
       playerHealth -= 1;
       enemyBullets.splice(i, 1);
       if (playerHealth <= 0) {
-        window.gamePaused = true;
+        gamePaused = true;
       }
     }
   }
