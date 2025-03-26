@@ -434,18 +434,29 @@ function drawEnemies() {
 }
 
 function updatePlayerPosition() {
-  if (moving.left) {
-    playerZ += PLAYER_MOVE_SPEED;
-  }
-  if (moving.right) {
-    playerZ -= PLAYER_MOVE_SPEED;
-  }
+  // Calculate movement direction based on camera angle
+  let moveX = 0;
+  let moveZ = 0;
   if (moving.up) {
-    playerX -= PLAYER_MOVE_SPEED;
+    moveX -= cos(cameraAngle) * PLAYER_MOVE_SPEED;
+    moveZ -= sin(cameraAngle) * PLAYER_MOVE_SPEED;
   }
   if (moving.down) {
-    playerX += PLAYER_MOVE_SPEED;
+    moveX += cos(cameraAngle) * PLAYER_MOVE_SPEED;
+    moveZ += sin(cameraAngle) * PLAYER_MOVE_SPEED;
   }
+
+  if (moving.left) {
+    moveX -= sin(cameraAngle) * PLAYER_MOVE_SPEED;
+    moveZ += cos(cameraAngle) * PLAYER_MOVE_SPEED;
+  }
+  if (moving.right) {
+    moveX += sin(cameraAngle) * PLAYER_MOVE_SPEED;
+    moveZ -= cos(cameraAngle) * PLAYER_MOVE_SPEED;
+  }
+  // Update player position
+  playerX += moveX;
+  playerZ += moveZ;
 }
 
 function updateEnemiesPosition() {
