@@ -332,6 +332,7 @@ function drawEnemyBullets() {
 }
 
 function drawSkills() {
+  skillAngle += 0.05;
   for (let i = skills.length - 1; i >= 0; i--) {
     let skill = skills[i];
     skill.x += skill.dx * SKILL_SPEED;
@@ -350,7 +351,6 @@ function drawSkills() {
     );
     size = constrain(size, 10, SKILL_MAX_SIZE * skill.sizeFactor); // Ensure size does not exceed max size
 
-    skillAngle += 0.05;
     rotateY(skillAngle);
     if (skill.type === "a") {
       fill(255, 0, 0, skill.lifetime * 5);
