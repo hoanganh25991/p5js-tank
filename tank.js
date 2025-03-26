@@ -48,14 +48,17 @@ let zoomLevel = 0.2; // Default zoom level
 let playerAngle = 0; // Tank body angle
 let turretAngle = 0; // Turret angle
 let cameraAngle = 0; // Camera angle
+let cameraDistance = 200; // Initial distance from the player
+
 let targetTurretAngle = 0;
 
+let cameraHeight = MAX_CAMERA_HEIGHT - 112; // Initial camera height
 let rotatingLeft = false;
 let rotatingRight = false;
-
-let cameraHeight = MAX_CAMERA_HEIGHT - 112; // Initial camera height
 let increasingHeight = false;
 let decreasingHeight = false;
+let movingCloser = false;
+let movingFarther = false;
 
 let skillSoundMap = {};
 let skillAngle = 0;
@@ -137,6 +140,14 @@ function draw() {
     cameraHeight = max(cameraHeight - 2, MIN_CAMERA_HEIGHT); // Decrease camera height, but not below ground level
   }
 
+  // Move camera closer or further from the tank with t and y
+  if (movingCloser) {
+    cameraDistance = max(200, cameraDistance - 2); // Move closer, with a minimum distance
+  }
+  if (movingFarther) {
+    cameraDistance = min(1000, cameraDistance + 2); // Move farther, with a maximum distance
+  }
+
   background(135, 206, 235); // Sky color
 
   // Lighting
@@ -154,8 +165,9 @@ function draw() {
 
   // Move camera with player and apply zoom
   zoomLevel = getDynamicZoomLevel();
-  let camX = playerX + (cos(cameraAngle) * 200) / zoomLevel;
-  let camZ = playerZ + (sin(cameraAngle) * 200) / zoomLevel;
+  let camX = playerX + (cos(cameraAngle) * cameraDistance) / zoomLevel;
+  let camZ = playerZ + (sin(cameraAngle) * cameraDistance) / zoomLevel;
+
   // Adjust camera height and ensure it rotates around the tank
   camera(camX, cameraHeight / zoomLevel, camZ, playerX, 0, playerZ, 0, 1, 0);
 
@@ -235,6 +247,7 @@ function drawTank() {
   cylinder(5, 40); // Create a cylinder for the barrel
   pop();
 }
+
 
 function drawAimLine(target) {
   let dx = target.x - playerX;
@@ -481,9 +494,13 @@ function keyPressed() {
   } else if (key.toLowerCase() === "w") {
     rotatingRight = true;
   } else if (key.toLowerCase() === "e") {
-    increasingHeight = true; // Start increasing camera height
+    increasingHeight = true;
   } else if (key.toLowerCase() === "r") {
-    decreasingHeight = true; // Start decreasing camera height
+    decreasingHeight = true;
+  } else if (key.toLowerCase() === "t") {
+    movingCloser = true;
+  } else if (key.toLowerCase() === "y") {
+    movingFarther = true;
   }
 }
 
@@ -512,9 +529,13 @@ function keyReleased() {
   } else if (key.toLowerCase() === "w") {
     rotatingRight = false;
   } else if (key.toLowerCase() === "e") {
-    increasingHeight = false; // Stop increasing camera height
+    increasingHeight = false;
   } else if (key.toLowerCase() === "r") {
-    decreasingHeight = false; // Stop decreasing camera height
+    decreasingHeight = false;
+  } else if (key.toLowerCase() === "t") {
+    movingCloser = false;
+  } else if (key.toLowerCase() === "y") {
+    movingFarther = false;
   }
 }
 
