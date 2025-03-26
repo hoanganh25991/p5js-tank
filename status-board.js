@@ -6,9 +6,10 @@ function updateStatusBoard() {
       <strong>Status Board</strong><br>
       Health: ${playerHealth}<br>
       Enemies Killed: ${enemiesKilled}<br>
+      ------------------------------<br>
       Camera Height: ${cameraHeight.toFixed(2)}<br>
       Camera Angle: ${(cameraAngle * (180 / Math.PI)).toFixed(2)}°<br>
-      Zoom Level: ${zoomLevel}°
+      Zoom Level: ${zoomLevel.toFixed(2)}°
     `;
   }
   
