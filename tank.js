@@ -27,6 +27,10 @@ const ENEMY_SPAWN_DISTANCE = 1500; // Increased maximum distance for enemies to 
 const MIN_CAMERA_HEIGHT = -500; // Minimum camera height (ground level)
 const MAX_CAMERA_HEIGHT = 0; // Maximum camera height (tank level)
 
+// Camera Settings
+const MIN_ZOOM_LEVEL = 0.04; // Maximum camera height (tank level)
+const MAX_ZOOM_LEVEL = 2; // Minimum camera height (ground level)
+
 // Movement Speeds
 const PLAYER_MOVE_SPEED = 6; // Speed of the player's tank
 const ENEMY_MOVE_SPEED = 2; // Speed of the enemies
@@ -92,6 +96,7 @@ window.state = {
   enemiesKilled,
   cameraHeight,
   cameraAngle,
+  zoomLevel,
 };
 
 window.gamePaused = true;
@@ -116,6 +121,7 @@ function setup() {
   textFont(myFont); // Set the font
   textSize(32); // Set the text size
   textAlign(CENTER, CENTER); // Align text to center
+  zoomLevel = getDynamicZoomLevel();
 }
 
 function draw() {
@@ -142,10 +148,10 @@ function draw() {
 
   // Move camera closer or further from the tank with t and y
   if (movingCloser) {
-    cameraDistance = max(200, cameraDistance - 2); // Move closer, with a minimum distance
+    zoomLevel = min(zoomLevel + 0.005, MAX_ZOOM_LEVEL);
   }
   if (movingFarther) {
-    cameraDistance = min(1000, cameraDistance + 2); // Move farther, with a maximum distance
+    zoomLevel = max(zoomLevel - 0.005, MIN_ZOOM_LEVEL);
   }
 
   background(135, 206, 235); // Sky color
@@ -164,7 +170,6 @@ function draw() {
   pop();
 
   // Move camera with player and apply zoom
-  zoomLevel = getDynamicZoomLevel();
   let camX = playerX + (cos(cameraAngle) * cameraDistance) / zoomLevel;
   let camZ = playerZ + (sin(cameraAngle) * cameraDistance) / zoomLevel;
 
@@ -227,6 +232,7 @@ function updateWindowState() {
   window.state.enemiesKilled = enemiesKilled;
   window.state.cameraHeight = cameraHeight;
   window.state.cameraAngle = cameraAngle;
+  window.state.zoomLevel = zoomLevel;
 }
 
 function drawTank() {
@@ -247,7 +253,6 @@ function drawTank() {
   cylinder(5, 40); // Create a cylinder for the barrel
   pop();
 }
-
 
 function drawAimLine(target) {
   let dx = target.x - playerX;
