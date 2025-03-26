@@ -104,6 +104,7 @@ function preload() {
   };
   myFont = loadFont("opensans-light.ttf");
   shurikenModel = loadModel("shuriken.obj", true);
+  fireBall = loadModel("fireball.obj", true);
 }
 
 function setup() {
@@ -353,7 +354,7 @@ function drawSkills() {
     rotateY(skillAngle);
     if (skill.type === "a") {
       fill(255, 0, 0, skill.lifetime * 5);
-      sphere(size);
+      drawFireball(size / 100);
     } else if (skill.type === "s") {
       fill(0, 255, 255, skill.lifetime * 5);
       box(size, size, size);
@@ -393,10 +394,15 @@ function drawCastSkills() {
     lastCastTime.f = currentTime;
   }
 }
-
 function drawShuriken(size) {
   scale(size);
   model(shurikenModel);
+}
+
+function drawFireball(size) {
+  ambientMaterial(255, 100, 0);
+  scale(size);
+  model(fireBall);
 }
 
 function drawEnemies() {
