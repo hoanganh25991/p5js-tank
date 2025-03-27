@@ -87,6 +87,7 @@ let casting = {
   d: false,
   f: false,
   g: false,
+  h: false,
 };
 
 let lastCastTime = {
@@ -94,6 +95,7 @@ let lastCastTime = {
   s: 0,
   d: 0,
   f: 0,
+  h: 0,
   g: 0,
 };
 
@@ -128,7 +130,8 @@ function preload() {
     s: loadSound("barrett-m107-sound-effect-245967.mp3"),
     d: loadSound("gun-shots-from-a-distance-23-39722.mp3"),
     f: loadSound("gun-shot-sound-effect-224087.mp3"),
-    g: loadSound("steampunk-weapon-single-shot-188051.mp3"),
+    g: loadSound("surprise-sound-effect-99300.mp3"),
+    h: loadSound("ocean-wave-fast-236009.mp3"),
   };
   myFont = loadFont("opensans-light.ttf");
   shurikenModel = loadModel("shuriken.obj", true);
@@ -394,7 +397,89 @@ function drawEnemyBullets() {
   }
 }
 
+// Wave effect for skill h
+let waves = [];
+
+class Wave {
+  constructor(x, z) {
+    this.x = x;
+    this.z = z;
+    this.waves = [
+      { radius: 50, alpha: 255 },
+      { radius: 50, alpha: 255 },
+      { radius: 50, alpha: 255 },
+      { radius: 50, alpha: 255 },
+      { radius: 50, alpha: 255 }
+    ];
+    this.maxRadius = 700;
+    this.speed = 16;
+    this.waveGap = 100; // Gap between waves
+    this.startTimes = [0, 10, 20, 30, 40]; // Stagger start times
+    this.frameCount = 0;
+  }
+
+  update() {
+    this.frameCount++;
+    let anyWaveActive = false;
+    
+    for (let i = 0; i < this.waves.length; i++) {
+      if (this.frameCount > this.startTimes[i]) {
+        let wave = this.waves[i];
+        if (wave.radius < this.maxRadius) {
+          wave.radius += this.speed;
+          wave.alpha = map(wave.radius, 50, this.maxRadius, 255, 0);
+          anyWaveActive = true;
+        }
+      } else {
+        anyWaveActive = true;
+      }
+    }
+    
+    return anyWaveActive;
+  }
+
+  draw() {
+    push();
+    translate(this.x, 0, this.z);
+    rotateX(HALF_PI);
+    
+    // Draw each wave
+    for (let wave of this.waves) {
+      if (wave.radius <= this.maxRadius) {
+        noFill();
+        stroke(0, 255, 255, wave.alpha);
+        strokeWeight(3);
+        circle(0, 0, wave.radius * 2);
+        
+        // Check collision with enemies for each wave
+        for (let i = enemies.length - 1; i >= 0; i--) {
+          let enemy = enemies[i];
+          let d = dist(enemy.x, enemy.z, this.x, this.z);
+          if (d <= wave.radius) {
+            // Kill enemy and add score
+            enemies.splice(i, 1);
+            enemiesKilled++;
+            if (enemies.length < MAX_ENEMIES) {
+              spawnEnemies(1);
+            }
+          }
+        }
+      }
+    }
+    pop();
+  }
+}
+
 function drawSkills() {
+  // Draw waves
+  for (let i = waves.length - 1; i >= 0; i--) {
+    let wave = waves[i];
+    wave.draw();
+    if (!wave.update()) {
+      waves.splice(i, 1);
+    }
+  }
+
   for (let i = skills.length - 1; i >= 0; i--) {
     let skill = skills[i];
 
@@ -668,6 +753,12 @@ function keyPressed() {
     casting.f = true;
   } else if (key.toLowerCase() === "g") {
     casting.g = true;
+  } else if (key.toLowerCase() === "h") {
+    if (millis() - lastCastTime.h > 500) { // 500ms cooldown
+      waves.push(new Wave(playerX, playerZ));
+      skillSoundMap.h.play();
+      lastCastTime.h = millis();
+    }
   } else if (key.toLowerCase() === "q") {
     rotatingLeft = true;
   } else if (key.toLowerCase() === "w") {

@@ -70,7 +70,7 @@ body {
   position: fixed;
   bottom: 0;
   padding: 10px 0;
-  opacity: 0.5;
+  opacity: 0.4;
   background-color: transparent; /* Đặt nền trong suốt cho div lớn */
 }
 
