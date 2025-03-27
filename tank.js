@@ -186,7 +186,7 @@ function draw() {
   camera(camX, cameraHeight / zoomLevel, camZ, playerX, 0, playerZ, 0, 1, 0);
 
   // Draw tank
-  drawTank();
+  drawTank(true); // Player tank needs translation
 
   // Draw aim lines for active skills
   drawSkillAimLines();
@@ -233,16 +233,20 @@ function getDynamicZoomLevel() {
   return 0.2;
 }
 
-function drawTank() {
+function drawTank(isPlayer = false) {
   push();
-  translate(playerX, 0, playerZ);
-  rotateY(playerAngle); // Rotate tank body
+  if (isPlayer) {
+    translate(playerX, 0, playerZ);
+    rotateY(playerAngle); // Rotate tank body
+  }
   // Tank body
   texture(tankTexture);
   box(tankSize, 20, tankSize);
   // Turret
   translate(0, -15, 0);
-  rotateY(turretAngle - playerAngle); // Rotate turret independently
+  if (isPlayer) {
+    rotateY(turretAngle - playerAngle); // Rotate turret independently for player
+  }
   box(30, 10, 30);
   // Gun barrel
   translate(0, 0, -20); // Position the barrel at the front of the turret
@@ -352,63 +356,15 @@ function drawSkills() {
     let skill = skills[i];
 
     if (skill.type === "g") {
-      // Move in same direction as player
-      if (moving.up || moving.down || moving.left || moving.right) {
-        // Calculate movement direction based on camera angle
-        let moveX = 0;
-        let moveZ = 0;
-        if (moving.up) {
-          moveX -= cos(cameraAngle) * PLAYER_MOVE_SPEED;
-          moveZ -= sin(cameraAngle) * PLAYER_MOVE_SPEED;
-        }
-        if (moving.down) {
-          moveX += cos(cameraAngle) * PLAYER_MOVE_SPEED;
-          moveZ += sin(cameraAngle) * PLAYER_MOVE_SPEED;
-        }
-
-        if (moving.left) {
-          moveX -= sin(cameraAngle) * PLAYER_MOVE_SPEED;
-          moveZ += cos(cameraAngle) * PLAYER_MOVE_SPEED;
-        }
-        if (moving.right) {
-          moveX += sin(cameraAngle) * PLAYER_MOVE_SPEED;
-          moveZ -= cos(cameraAngle) * PLAYER_MOVE_SPEED;
-        }
-        // Update ally tank position with same movement
-        skill.x += moveX
-        skill.z += moveZ
-      }
-
-      // Calculate angle towards nearest enemy for shooting
-      let nearestEnemy = findNearestEnemies(1)[0];
-      skill.target = nearestEnemy;
-      if (nearestEnemy) {
-        let enemyDx = nearestEnemy.x - skill.x;
-        let enemyDz = nearestEnemy.z - skill.z;
-        skill.dx = enemyDx / Math.sqrt(enemyDx * enemyDx + enemyDz * enemyDz);
-        skill.dz = enemyDz / Math.sqrt(enemyDx * enemyDx + enemyDz * enemyDz);
-      }
-
+      updateMiniTankPosition(skill);
+      
       push();
       translate(skill.x, skill.y, skill.z);
       fill(0, 255, 0, skill.lifetime);
       scale(0.5); // Fixed scale for ally tank
-      drawTank();
+      drawTank(); // Ally tank, no need for player translation
       pop();
-
-      // Auto-fire bullets from ally tank
-      if (frameCount % BULLET_FIRE_INTERVAL === 0 && nearestEnemy) {
-        bullets.push({
-          x: skill.x,
-          y: 0,
-          z: skill.z,
-          dx: skill.dx,
-          dz: skill.dz,
-          distanceTraveled: 0,
-          color: [255, 255, 0], // Yellow color for ally tank bullets
-        });
-      }
-
+      
       skill.lifetime--;
     } else {
       // Original behavior for other skills
@@ -522,6 +478,79 @@ function updatePlayerPosition() {
   playerZ += moveZ;
 }
 
+function spawnMiniTank() {
+  let x = random(
+    playerX - 200,
+    playerX + 200
+  );
+  let z = random(
+    playerZ - 200,
+    playerZ + 200
+  );
+
+  // Random direction
+  let dx = random(-1, 1);
+  let dz = random(-1, 1);
+  let dist = Math.sqrt(dx * dx + dz * dz);
+  dx = dx / dist;
+  dz = dz / dist;
+
+  skills.push({
+    x: x,
+    y: 0,
+    z: z,
+    dx: dx,
+    dz: dz,
+    type: 'g',
+    lifetime: 300,
+    distanceTraveled: 0,
+    sizeFactor: 1
+  });
+}
+
+function updateMiniTankPosition(miniTank) {
+  // Move in same direction as player
+  if (moving.up || moving.down || moving.left || moving.right) {
+    // Calculate movement direction based on camera angle
+    let moveX = 0;
+    let moveZ = 0;
+    if (moving.up) {
+      moveX -= cos(cameraAngle) * PLAYER_MOVE_SPEED;
+      moveZ -= sin(cameraAngle) * PLAYER_MOVE_SPEED;
+    }
+    if (moving.down) {
+      moveX += cos(cameraAngle) * PLAYER_MOVE_SPEED;
+      moveZ += sin(cameraAngle) * PLAYER_MOVE_SPEED;
+    }
+    if (moving.left) {
+      moveX -= sin(cameraAngle) * PLAYER_MOVE_SPEED;
+      moveZ += cos(cameraAngle) * PLAYER_MOVE_SPEED;
+    }
+    if (moving.right) {
+      moveX += sin(cameraAngle) * PLAYER_MOVE_SPEED;
+      moveZ -= cos(cameraAngle) * PLAYER_MOVE_SPEED;
+    }
+    // Update ally tank position with same movement
+    miniTank.x += moveX;
+    miniTank.z += moveZ;
+  }
+
+  // Calculate angle towards nearest enemy for shooting
+  let nearestEnemy = findNearestEnemies(1)[0];
+  if (nearestEnemy && frameCount % 30 === 0) {
+    let bulletAngle = atan2(nearestEnemy.z - miniTank.z, nearestEnemy.x - miniTank.x);
+    bullets.push({
+      x: miniTank.x,
+      y: 0,
+      z: miniTank.z,
+      dx: cos(bulletAngle),
+      dz: sin(bulletAngle),
+      distanceTraveled: 0,
+      fromAlly: true // Mark bullet as from ally
+    });
+  }
+}
+
 function updateEnemiesPosition() {
   for (let enemy of enemies) {
     // Calculate the distance to the player
@@ -632,33 +661,7 @@ function castSkill(type, numTargets, sizeFactor, skillSound) {
 
   // Special handling for ally tanks (type 'g')
   if (type === "g") {
-    let x = random(
-      playerX - 200,
-      playerX + 200
-    );
-    let z = random(
-      playerZ - 200,
-      playerZ + 200
-    );
-
-    // Random direction
-    let dx = random(-1, 1);
-    let dz = random(-1, 1);
-    let dist = Math.sqrt(dx * dx + dz * dz);
-    dx = dx / dist;
-    dz = dz / dist;
-
-    skills.push({
-      x: x,
-      y: 0,
-      z: z,
-      dx: dx,
-      dz: dz,
-      type: type,
-      lifetime: 300, // 10 seconds (60 frames per second * 10)
-      distanceTraveled: 0,
-      sizeFactor: sizeFactor,
-    });
+    spawnMiniTank();
     return;
   }
 
