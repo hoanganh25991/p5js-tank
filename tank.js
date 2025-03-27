@@ -121,7 +121,7 @@ window.setState = function (newState) {
 };
 
 function preload() {
-  groundTexture = loadImage("photo-1422651355218-53453822ebb8.jpg"); // Ground texture
+  groundTexture = loadImage("rocky_terrain_02_diff_4k.jpg"); // Ground texture
   tankTexture = loadImage("photo-1539538507524-eab6a4184604.jpg"); // Tank texture
   skillSoundMap = {
     a: loadSound("steampunk-weapon-single-shot-188051.mp3"),

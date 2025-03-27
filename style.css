@@ -89,13 +89,14 @@ body {
 
 .key {
   flex: 1;
-  height: 50px;
-  width: 50px;
-  font-size: 18px;
+  height: 5rem;
+  width: 5rem;
+  font-size: 3rem;
+  font-weight: bolder;
   text-transform: uppercase;
   background-color: #fff;
-  border: 2px solid #ccc;
-  border-radius: 5px;
+  border: 0.2rem solid #ccc;
+  border-radius: 0.5rem;
   cursor: pointer;
   transition: background-color 0.2s;
   display: flex;
