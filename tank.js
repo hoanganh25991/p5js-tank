@@ -45,6 +45,11 @@ let enemyBullets = [];
 let enemies = [];
 let skills = [];
 let moving = { left: false, right: false, up: false, down: false };
+
+// Mouse control variables
+let isMiddleMouseDown = false;
+let lastMouseX = 0;
+let lastMouseY = 0;
 let playerHealth = 1000; // Default health
 let enemiesKilled = 0;
 let tankSize = 75; // Tank size
@@ -648,6 +653,54 @@ function keyReleased() {
     movingCloser = false;
   } else if (key.toLowerCase() === "y") {
     movingFarther = false;
+  }
+}
+
+function mouseWheel(event) {
+  // Prevent default behavior (page scrolling)
+  event.preventDefault();
+  
+  // Adjust zoom level with mouse wheel when middle mouse is not held
+  if (!isMiddleMouseDown) {
+    let zoomChange = event.delta > 0 ? 0.01 : -0.01;
+    zoomLevel = constrain(zoomLevel + zoomChange, MIN_ZOOM_LEVEL, MAX_ZOOM_LEVEL);
+  }
+}
+
+function mousePressed() {
+  // Middle mouse button
+  if (mouseButton === CENTER) {
+    isMiddleMouseDown = true;
+    lastMouseX = mouseX;
+    lastMouseY = mouseY;
+  }
+}
+
+function mouseReleased() {
+  if (mouseButton === CENTER) {
+    isMiddleMouseDown = false;
+  }
+}
+
+function mouseDragged() {
+  if (isMiddleMouseDown) {
+    // Calculate mouse movement
+    let deltaX = mouseX - lastMouseX;
+    let deltaY = mouseY - lastMouseY;
+    
+    // Adjust camera angle based on horizontal movement
+    cameraAngle += deltaX * 0.01;
+    
+    // Adjust camera height based on vertical movement
+    cameraHeight = constrain(
+      cameraHeight - deltaY * 2,
+      MIN_CAMERA_HEIGHT,
+      MAX_CAMERA_HEIGHT
+    );
+    
+    // Update last position
+    lastMouseX = mouseX;
+    lastMouseY = mouseY;
   }
 }
 
