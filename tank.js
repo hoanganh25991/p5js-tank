@@ -38,6 +38,11 @@ const ENEMY_MOVE_SPEED = 2; // Speed of the enemies
 // Visual Aids
 const AIM_LINE_LENGTH = 2000; // Configurable length of the aim line
 
+// Ground Settings
+const GROUND_TILE_SIZE = 16000; // Size of each ground tile (4x larger)
+const GROUND_TILES = 1; // Number of tiles in each direction (3x3 grid)
+const GROUND_REPEAT_DISTANCE = GROUND_TILE_SIZE; // Distance before ground repeats
+
 let playerX = 0;
 let playerZ = 0;
 let bullets = [];
@@ -139,6 +144,45 @@ function setup() {
   zoomLevel = getDynamicZoomLevel();
 }
 
+function drawGround() {
+  push();
+  translate(0, 50, 0); // Move ground down by 50 units
+  
+  // Calculate which grid cell the player is in
+  let gridX = Math.floor(playerX / GROUND_REPEAT_DISTANCE);
+  let gridZ = Math.floor(playerZ / GROUND_REPEAT_DISTANCE);
+  
+  // Draw ground tiles centered around player
+  for (let x = -GROUND_TILES; x <= GROUND_TILES; x++) {
+    for (let z = -GROUND_TILES; z <= GROUND_TILES; z++) {
+      push();
+      translate(
+        (gridX + x) * GROUND_REPEAT_DISTANCE,
+        0,
+        (gridZ + z) * GROUND_REPEAT_DISTANCE
+      );
+      
+      // Draw ground tile with image
+      noStroke();
+      rotateX(HALF_PI);
+      texture(groundTexture);
+      
+      // Draw a single large texture for each tile
+      // Scale UV coordinates to 1/4 to make texture 4x larger
+      beginShape();
+      textureMode(NORMAL);
+      vertex(-GROUND_TILE_SIZE/2, -GROUND_TILE_SIZE/2, 0, 0, 0);
+      vertex(GROUND_TILE_SIZE/2, -GROUND_TILE_SIZE/2, 0, 0.25, 0);
+      vertex(GROUND_TILE_SIZE/2, GROUND_TILE_SIZE/2, 0, 0.25, 0.25);
+      vertex(-GROUND_TILE_SIZE/2, GROUND_TILE_SIZE/2, 0, 0, 0.25);
+      endShape(CLOSE);
+      
+      pop();
+    }
+  }
+  pop();
+}
+
 function draw() {
   if (gamePaused) {
     return;
@@ -174,14 +218,8 @@ function draw() {
   ambientLight(75); // Ánh sáng môi trường
   directionalLight(255, 255, 255, 0, 1, -1);
 
-  // Draw ground
-  push();
-  translate(0, 200, 0);
-  rotateX(HALF_PI);
-  noStroke();
-  texture(groundTexture);
-  plane(20000, 20000);
-  pop();
+  // Draw infinite ground
+  drawGround();
 
   // Move camera with player and apply zoom
   let camX = playerX + (cos(cameraAngle) * cameraDistance) / zoomLevel;
@@ -363,11 +401,37 @@ function drawSkills() {
     if (skill.type === "g") {
       updateMiniTankPosition(skill);
       
+      // Find nearest enemy for turret rotation
+      let nearestEnemy = findNearestEnemies(1)[0];
+      let turretAngle = 0;
+      
+      if (nearestEnemy) {
+        turretAngle = atan2(nearestEnemy.z - skill.z, nearestEnemy.x - skill.x);
+      }
+      
       push();
       translate(skill.x, skill.y, skill.z);
       fill(0, 255, 0, skill.lifetime);
       scale(0.5); // Fixed scale for ally tank
-      drawTank(); // Ally tank, no need for player translation
+      
+      // Draw tank with turret rotation
+      push();
+      // Tank body
+      texture(tankTexture);
+      box(tankSize, 20, tankSize);
+      
+      // Turret with rotation
+      translate(0, -15, 0);
+      rotateY(turretAngle);
+      box(30, 10, 30);
+      
+      // Gun barrel
+      translate(0, 0, -20);
+      rotateX(HALF_PI);
+      fill(100);
+      cylinder(5, 40);
+      pop();
+      
       pop();
       
       skill.lifetime--;
