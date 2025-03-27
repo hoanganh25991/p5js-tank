@@ -76,6 +76,7 @@ let casting = {
   s: false,
   d: false,
   f: false,
+  g: false,
 };
 
 let lastCastTime = {
@@ -83,6 +84,7 @@ let lastCastTime = {
   s: 0,
   d: 0,
   f: 0,
+  g: 0,
 };
 
 const cooldown = {
@@ -90,6 +92,7 @@ const cooldown = {
   s: 500,
   d: 500,
   f: 500,
+  g: 500,
 };
 
 window.getState = function () {
@@ -115,6 +118,7 @@ function preload() {
     s: loadSound("barrett-m107-sound-effect-245967.mp3"),
     d: loadSound("gun-shots-from-a-distance-23-39722.mp3"),
     f: loadSound("gun-shot-sound-effect-224087.mp3"),
+    g: loadSound("steampunk-weapon-single-shot-188051.mp3"),
   };
   myFont = loadFont("opensans-light.ttf");
   shurikenModel = loadModel("shuriken.obj", true);
@@ -376,6 +380,24 @@ function drawSkills() {
     } else if (skill.type === "f") {
       fill(255, 255, 0, skill.lifetime * 5);
       drawShuriken((size / 100) * 1);
+    } else if (skill.type === "g") {
+      fill(0, 255, 0, skill.lifetime * 5);
+      push();
+      let tankScale = (size / SKILL_BASE_SIZE) * 0.5; // Scale based on skill size, but keep it smaller
+      scale(tankScale);
+      drawTank();
+      pop();
+      // Auto-fire bullets from ally tank
+      if (frameCount % BULLET_FIRE_INTERVAL === 0) {
+        bullets.push({
+          x: skill.x,
+          y: 0,
+          z: skill.z,
+          dx: skill.dx,
+          dz: skill.dz,
+          distanceTraveled: 0
+        });
+      }
     }
     pop();
 
@@ -404,6 +426,10 @@ function drawCastSkills() {
   if (casting.f && currentTime - lastCastTime.f >= cooldown.f) {
     castSkill("f", 1, 10, skillSoundMap["f"]);
     lastCastTime.f = currentTime;
+  }
+  if (casting.g && currentTime - lastCastTime.g >= cooldown.g) {
+    castSkill("g", 1, 1, skillSoundMap["g"]);
+    lastCastTime.g = currentTime;
   }
 }
 function drawShuriken(size) {
@@ -499,6 +525,8 @@ function keyPressed() {
     casting.d = true;
   } else if (key.toLowerCase() === "f") {
     casting.f = true;
+  } else if (key.toLowerCase() === "g") {
+    casting.g = true;
   } else if (key.toLowerCase() === "q") {
     rotatingLeft = true;
   } else if (key.toLowerCase() === "w") {
@@ -534,6 +562,8 @@ function keyReleased() {
     casting.d = false;
   } else if (key.toLowerCase() === "f") {
     casting.f = false;
+  } else if (key.toLowerCase() === "g") {
+    casting.g = false;
   } else if (key.toLowerCase() === "q") {
     rotatingLeft = false;
   } else if (key.toLowerCase() === "w") {
