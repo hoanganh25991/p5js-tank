@@ -448,7 +448,7 @@ class Wave {
       if (wave.radius <= this.maxRadius) {
         noFill();
         stroke(0, 255, 255, wave.alpha);
-        strokeWeight(3);
+        strokeWeight(8);
         circle(0, 0, wave.radius * 2);
         
         // Check collision with enemies for each wave
