@@ -352,17 +352,31 @@ function drawSkills() {
     let skill = skills[i];
 
     if (skill.type === "g") {
-      // Ally tank specific update
-      // Update ally tank position to follow player
-      let dx = playerX - skill.x;
-      let dz = playerZ - skill.z;
-      let dist = Math.sqrt(dx * dx + dz * dz);
-
-      // Only move if player is moving
+      // Move in same direction as player
       if (moving.up || moving.down || moving.left || moving.right) {
-        let moveSpeed = PLAYER_MOVE_SPEED * 0.8; // Slightly slower than player
-        skill.x += (dx / dist) * moveSpeed;
-        skill.z += (dz / dist) * moveSpeed;
+        // Calculate movement direction based on camera angle
+        let moveX = 0;
+        let moveZ = 0;
+        if (moving.up) {
+          moveX -= cos(cameraAngle) * PLAYER_MOVE_SPEED;
+          moveZ -= sin(cameraAngle) * PLAYER_MOVE_SPEED;
+        }
+        if (moving.down) {
+          moveX += cos(cameraAngle) * PLAYER_MOVE_SPEED;
+          moveZ += sin(cameraAngle) * PLAYER_MOVE_SPEED;
+        }
+
+        if (moving.left) {
+          moveX -= sin(cameraAngle) * PLAYER_MOVE_SPEED;
+          moveZ += cos(cameraAngle) * PLAYER_MOVE_SPEED;
+        }
+        if (moving.right) {
+          moveX += sin(cameraAngle) * PLAYER_MOVE_SPEED;
+          moveZ -= cos(cameraAngle) * PLAYER_MOVE_SPEED;
+        }
+        // Update ally tank position with same movement
+        skill.x += moveX
+        skill.z += moveZ
       }
 
       // Calculate angle towards nearest enemy for shooting
@@ -618,9 +632,14 @@ function castSkill(type, numTargets, sizeFactor, skillSound) {
 
   // Special handling for ally tanks (type 'g')
   if (type === "g") {
-    // Spawn tanks closer to player
-    let x = playerX + random(-50, 50);
-    let z = playerZ + random(-50, 50);
+    let x = random(
+      playerX - 200,
+      playerX + 200
+    );
+    let z = random(
+      playerZ - 200,
+      playerZ + 200
+    );
 
     // Random direction
     let dx = random(-1, 1);
@@ -719,7 +738,7 @@ function checkCollisions() {
   for (let i = skills.length - 1; i >= 0; i--) {
     let skill = skills[i];
     // For ally tanks, use fixed size. For other skills, use expanding size
-    let skillSize = skill.type === 'g' ? 
+    let skillSize = skill.type === 'g' ?
       SKILL_BASE_SIZE * 0.5 : // Fixed size for ally tanks
       constrain(
         map(skill.distanceTraveled, 0, SKILL_EXPAND_DISTANCE, 10, SKILL_BASE_SIZE * skill.sizeFactor),
