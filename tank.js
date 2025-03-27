@@ -268,7 +268,7 @@ function drawAimLine(target) {
 
 function drawSkillAimLines() {
   for (let skill of skills) {
-    if (skill.lifetime > 0) {
+    if (skill.lifetime > 0 && skill.target) {
       drawAimLine(skill.target);
     }
   }
@@ -348,60 +348,89 @@ function drawEnemyBullets() {
 }
 
 function drawSkills() {
-  skillAngle += 0.05;
   for (let i = skills.length - 1; i >= 0; i--) {
     let skill = skills[i];
-    skill.x += skill.dx * SKILL_SPEED;
-    skill.z += skill.dz * SKILL_SPEED;
-    skill.lifetime--;
-    skill.distanceTraveled += SKILL_SPEED;
 
-    push();
-    translate(skill.x, skill.y, skill.z);
-    let size = map(
-      skill.distanceTraveled,
-      0,
-      SKILL_EXPAND_DISTANCE,
-      10,
-      SKILL_BASE_SIZE * skill.sizeFactor // Use the dynamic size factor
-    );
-    size = constrain(size, 10, SKILL_BASE_SIZE * skill.sizeFactor); // Ensure size does not exceed max size
+    if (skill.type === "g") {
+      // Ally tank specific update
+      // Update ally tank position to follow player
+      let dx = playerX - skill.x;
+      let dz = playerZ - skill.z;
+      let dist = Math.sqrt(dx * dx + dz * dz);
 
-    rotateY(skillAngle);
-    if (skill.type === "a") {
-      fill(255, 0, 0, skill.lifetime * 5);
-      drawFireball(size / 100);
-    } else if (skill.type === "s") {
-      fill(0, 255, 255, skill.lifetime * 5);
-      box(size, size, size);
-    } else if (skill.type === "d") {
-      fill(255, 165, 0, skill.lifetime * 5);
-      cone(size, size * 2);
-    } else if (skill.type === "f") {
-      fill(255, 255, 0, skill.lifetime * 5);
-      drawShuriken((size / 100) * 1);
-    } else if (skill.type === "g") {
-      fill(0, 255, 0, skill.lifetime * 5);
+      // Only move if player is moving
+      if (moving.up || moving.down || moving.left || moving.right) {
+        let moveSpeed = PLAYER_MOVE_SPEED * 0.8; // Slightly slower than player
+        skill.x += (dx / dist) * moveSpeed;
+        skill.z += (dz / dist) * moveSpeed;
+      }
+
+      // Calculate angle towards nearest enemy for shooting
+      let nearestEnemy = findNearestEnemies(1)[0];
+      skill.target = nearestEnemy;
+      if (nearestEnemy) {
+        let enemyDx = nearestEnemy.x - skill.x;
+        let enemyDz = nearestEnemy.z - skill.z;
+        skill.dx = enemyDx / Math.sqrt(enemyDx * enemyDx + enemyDz * enemyDz);
+        skill.dz = enemyDz / Math.sqrt(enemyDx * enemyDx + enemyDz * enemyDz);
+      }
+
       push();
-      let tankScale = (size / SKILL_BASE_SIZE) * 0.5; // Scale based on skill size, but keep it smaller
-      scale(tankScale);
+      translate(skill.x, skill.y, skill.z);
+      fill(0, 255, 0, skill.lifetime);
+      scale(0.5); // Fixed scale for ally tank
       drawTank();
       pop();
+
       // Auto-fire bullets from ally tank
-      if (frameCount % BULLET_FIRE_INTERVAL === 0) {
+      if (frameCount % BULLET_FIRE_INTERVAL === 0 && nearestEnemy) {
         bullets.push({
           x: skill.x,
           y: 0,
           z: skill.z,
           dx: skill.dx,
           dz: skill.dz,
-          distanceTraveled: 0
+          distanceTraveled: 0,
+          color: [255, 255, 0], // Yellow color for ally tank bullets
         });
       }
-    }
-    pop();
 
-    // Remove skills that have traveled beyond the maximum distance
+      skill.lifetime--;
+    } else {
+      // Original behavior for other skills
+      skill.x += skill.dx * SKILL_SPEED;
+      skill.z += skill.dz * SKILL_SPEED;
+      skill.lifetime--;
+      skill.distanceTraveled += SKILL_SPEED;
+
+      push();
+      translate(skill.x, skill.y, skill.z);
+      let size = map(
+        skill.distanceTraveled,
+        0,
+        SKILL_EXPAND_DISTANCE,
+        10,
+        SKILL_BASE_SIZE * skill.sizeFactor
+      );
+      size = constrain(size, 10, SKILL_BASE_SIZE * skill.sizeFactor);
+
+      rotateY(skillAngle);
+      if (skill.type === "a") {
+        fill(255, 0, 0, skill.lifetime * 5);
+        drawFireball(size / 100);
+      } else if (skill.type === "s") {
+        fill(0, 255, 255, skill.lifetime * 5);
+        box(size, size, size);
+      } else if (skill.type === "d") {
+        fill(255, 165, 0, skill.lifetime * 5);
+        cone(size, size * 2);
+      } else if (skill.type === "f") {
+        fill(255, 255, 0, skill.lifetime * 5);
+        drawShuriken((size / 100) * 1);
+      }
+      pop();
+    }
+
     if (skill.distanceTraveled > SKILL_MAX_DISTANCE || skill.lifetime <= 0) {
       skills.splice(i, 1);
     }
@@ -586,8 +615,36 @@ function castSkill(type, numTargets, sizeFactor, skillSound) {
   if (skillSound) {
     skillSound.play();
   }
-  let targets = findNearestEnemies(numTargets); // Find the nearest enemies
 
+  // Special handling for ally tanks (type 'g')
+  if (type === "g") {
+    // Spawn tanks closer to player
+    let x = playerX + random(-50, 50);
+    let z = playerZ + random(-50, 50);
+
+    // Random direction
+    let dx = random(-1, 1);
+    let dz = random(-1, 1);
+    let dist = Math.sqrt(dx * dx + dz * dz);
+    dx = dx / dist;
+    dz = dz / dist;
+
+    skills.push({
+      x: x,
+      y: 0,
+      z: z,
+      dx: dx,
+      dz: dz,
+      type: type,
+      lifetime: 300, // 10 seconds (60 frames per second * 10)
+      distanceTraveled: 0,
+      sizeFactor: sizeFactor,
+    });
+    return;
+  }
+
+  // Original behavior for other skills
+  let targets = findNearestEnemies(numTargets);
   for (let target of targets) {
     let dx = target.x - playerX;
     let dz = target.z - playerZ;
@@ -596,13 +653,13 @@ function castSkill(type, numTargets, sizeFactor, skillSound) {
       x: playerX,
       y: 0,
       z: playerZ,
-      dx: cos(angle), // Use angle to determine direction
-      dz: sin(angle), // Use angle to determine direction
+      dx: cos(angle),
+      dz: sin(angle),
       type: type,
-      lifetime: 200, // Increased lifetime for skills
+      lifetime: 200,
       distanceTraveled: 0,
-      sizeFactor: sizeFactor, // Store the size factor
-      target: target, // Store the target for aim line
+      sizeFactor: sizeFactor,
+      target: target,
     });
   }
 }
@@ -661,14 +718,14 @@ function checkCollisions() {
   // Skill collision with enemies
   for (let i = skills.length - 1; i >= 0; i--) {
     let skill = skills[i];
-    let skillSize = map(
-      skill.distanceTraveled,
-      0,
-      SKILL_EXPAND_DISTANCE,
-      10,
-      SKILL_BASE_SIZE * skill.sizeFactor
-    );
-    skillSize = constrain(skillSize, 10, SKILL_BASE_SIZE * skill.sizeFactor); // Ensure size does not exceed max size
+    // For ally tanks, use fixed size. For other skills, use expanding size
+    let skillSize = skill.type === 'g' ? 
+      SKILL_BASE_SIZE * 0.5 : // Fixed size for ally tanks
+      constrain(
+        map(skill.distanceTraveled, 0, SKILL_EXPAND_DISTANCE, 10, SKILL_BASE_SIZE * skill.sizeFactor),
+        10,
+        SKILL_BASE_SIZE * skill.sizeFactor
+      );
 
     for (let j = enemies.length - 1; j >= 0; j--) {
       let enemy = enemies[j];
