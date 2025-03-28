@@ -105,6 +105,7 @@ const cooldown = {
   d: 500,
   f: 500,
   g: 500,
+  h: 500,
 };
 
 window.getState = function () {
@@ -584,6 +585,13 @@ function drawCastSkills() {
     castSkill("g", 1, 1, skillSoundMap["g"]);
     lastCastTime.g = currentTime;
   }
+  if(casting.h && currentTime - lastCastTime.h >= cooldown.h){
+    if (millis() - lastCastTime.h > 500) { // 500ms cooldown
+      waves.push(new Wave(playerX, playerZ));
+      skillSoundMap.h.play();
+      lastCastTime.h = millis();
+    }
+  }
 }
 function drawShuriken(size) {
   scale(size);
@@ -754,11 +762,7 @@ function keyPressed() {
   } else if (key.toLowerCase() === "g") {
     casting.g = true;
   } else if (key.toLowerCase() === "h") {
-    if (millis() - lastCastTime.h > 500) { // 500ms cooldown
-      waves.push(new Wave(playerX, playerZ));
-      skillSoundMap.h.play();
-      lastCastTime.h = millis();
-    }
+    casting.h = true;
   } else if (key.toLowerCase() === "q") {
     rotatingLeft = true;
   } else if (key.toLowerCase() === "w") {
@@ -796,6 +800,8 @@ function keyReleased() {
     casting.f = false;
   } else if (key.toLowerCase() === "g") {
     casting.g = false;
+  } else if (key.toLowerCase() === "h") {
+    casting.h = false;
   } else if (key.toLowerCase() === "q") {
     rotatingLeft = false;
   } else if (key.toLowerCase() === "w") {
