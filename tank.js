@@ -481,6 +481,7 @@ function drawSkills() {
     }
   }
 
+  skillAngle = skillAngle + 0.1
   for (let i = skills.length - 1; i >= 0; i--) {
     let skill = skills[i];
 
