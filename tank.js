@@ -151,11 +151,11 @@ function setup() {
 function drawGround() {
   push();
   translate(0, 50, 0); // Move ground down by 50 units
-  
+
   // Calculate which grid cell the player is in
   let gridX = Math.floor(playerX / GROUND_REPEAT_DISTANCE);
   let gridZ = Math.floor(playerZ / GROUND_REPEAT_DISTANCE);
-  
+
   // Draw ground tiles centered around player
   for (let x = -GROUND_TILES; x <= GROUND_TILES; x++) {
     for (let z = -GROUND_TILES; z <= GROUND_TILES; z++) {
@@ -165,22 +165,22 @@ function drawGround() {
         0,
         (gridZ + z) * GROUND_REPEAT_DISTANCE
       );
-      
+
       // Draw ground tile with image
       noStroke();
       rotateX(HALF_PI);
       texture(groundTexture);
-      
+
       // Draw a single large texture for each tile
       // Scale UV coordinates to 1/4 to make texture 4x larger
       beginShape();
       textureMode(NORMAL);
-      vertex(-GROUND_TILE_SIZE/2, -GROUND_TILE_SIZE/2, 0, 0, 0);
-      vertex(GROUND_TILE_SIZE/2, -GROUND_TILE_SIZE/2, 0, 0.25, 0);
-      vertex(GROUND_TILE_SIZE/2, GROUND_TILE_SIZE/2, 0, 0.25, 0.25);
-      vertex(-GROUND_TILE_SIZE/2, GROUND_TILE_SIZE/2, 0, 0, 0.25);
+      vertex(-GROUND_TILE_SIZE / 2, -GROUND_TILE_SIZE / 2, 0, 0, 0);
+      vertex(GROUND_TILE_SIZE / 2, -GROUND_TILE_SIZE / 2, 0, 0.25, 0);
+      vertex(GROUND_TILE_SIZE / 2, GROUND_TILE_SIZE / 2, 0, 0.25, 0.25);
+      vertex(-GROUND_TILE_SIZE / 2, GROUND_TILE_SIZE / 2, 0, 0, 0.25);
       endShape(CLOSE);
-      
+
       pop();
     }
   }
@@ -402,18 +402,12 @@ function drawEnemyBullets() {
 let waves = [];
 
 class Wave {
-  constructor(x, z) {
+  constructor(x, z, numTargets, sizeFactor) {
     this.x = x;
     this.z = z;
-    this.waves = [
-      { radius: 50, alpha: 255 },
-      { radius: 50, alpha: 255 },
-      { radius: 50, alpha: 255 },
-      { radius: 50, alpha: 255 },
-      { radius: 50, alpha: 255 }
-    ];
-    this.maxRadius = 700;
-    this.speed = 16;
+    this.waves = Array.from({ length: numTargets }, () => ({ radius: 50, alpha: 255 }));
+    this.maxRadius = sizeFactor;
+    this.speed = 8;
     this.waveGap = 100; // Gap between waves
     this.startTimes = [0, 10, 20, 30, 40]; // Stagger start times
     this.frameCount = 0;
@@ -422,7 +416,7 @@ class Wave {
   update() {
     this.frameCount++;
     let anyWaveActive = false;
-    
+
     for (let i = 0; i < this.waves.length; i++) {
       if (this.frameCount > this.startTimes[i]) {
         let wave = this.waves[i];
@@ -435,7 +429,7 @@ class Wave {
         anyWaveActive = true;
       }
     }
-    
+
     return anyWaveActive;
   }
 
@@ -443,15 +437,15 @@ class Wave {
     push();
     translate(this.x, 0, this.z);
     rotateX(HALF_PI);
-    
+
     // Draw each wave
     for (let wave of this.waves) {
       if (wave.radius <= this.maxRadius) {
         noFill();
-        stroke(0, 255, 255, wave.alpha);
-        strokeWeight(8);
+        stroke(0, 180, 255, wave.alpha);
+        strokeWeight(16);
         circle(0, 0, wave.radius * 2);
-        
+
         // Check collision with enemies for each wave
         for (let i = enemies.length - 1; i >= 0; i--) {
           let enemy = enemies[i];
@@ -481,46 +475,46 @@ function drawSkills() {
     }
   }
 
-  skillAngle = skillAngle + 0.1
+  skillAngle = skillAngle + 0.1;
   for (let i = skills.length - 1; i >= 0; i--) {
     let skill = skills[i];
 
     if (skill.type === "g") {
       updateMiniTankPosition(skill);
-      
+
       // Find nearest enemy for turret rotation
       let nearestEnemy = findNearestEnemies(1)[0];
       let turretAngle = 0;
-      
+
       if (nearestEnemy) {
         turretAngle = atan2(nearestEnemy.z - skill.z, nearestEnemy.x - skill.x);
       }
-      
+
       push();
       translate(skill.x, skill.y, skill.z);
       fill(0, 255, 0, skill.lifetime);
       scale(0.5); // Fixed scale for ally tank
-      
+
       // Draw tank with turret rotation
       push();
       // Tank body
       texture(tankTexture);
       box(tankSize, 20, tankSize);
-      
+
       // Turret with rotation
       translate(0, -15, 0);
       rotateY(turretAngle);
       box(30, 10, 30);
-      
+
       // Gun barrel
       translate(0, 0, -20);
       rotateX(HALF_PI);
       fill(100);
       cylinder(5, 40);
       pop();
-      
+
       pop();
-      
+
       skill.lifetime--;
     } else {
       // Original behavior for other skills
@@ -586,12 +580,9 @@ function drawCastSkills() {
     castSkill("g", 1, 1, skillSoundMap["g"]);
     lastCastTime.g = currentTime;
   }
-  if(casting.h && currentTime - lastCastTime.h >= cooldown.h){
-    if (millis() - lastCastTime.h > 500) { // 500ms cooldown
-      waves.push(new Wave(playerX, playerZ));
-      skillSoundMap.h.play();
-      lastCastTime.h = millis();
-    }
+  if (casting.h && currentTime - lastCastTime.h >= cooldown.h) {
+    castSkill("h", 5, 5, skillSoundMap["h"]);
+    lastCastTime.h = currentTime;
   }
 }
 function drawShuriken(size) {
@@ -642,14 +633,8 @@ function updatePlayerPosition() {
 }
 
 function spawnMiniTank() {
-  let x = random(
-    playerX - 200,
-    playerX + 200
-  );
-  let z = random(
-    playerZ - 200,
-    playerZ + 200
-  );
+  let x = random(playerX - 200, playerX + 200);
+  let z = random(playerZ - 200, playerZ + 200);
 
   // Random direction
   let dx = random(-1, 1);
@@ -664,10 +649,10 @@ function spawnMiniTank() {
     z: z,
     dx: dx,
     dz: dz,
-    type: 'g',
+    type: "g",
     lifetime: 300,
     distanceTraveled: 0,
-    sizeFactor: 1
+    sizeFactor: 1,
   });
 }
 
@@ -701,7 +686,10 @@ function updateMiniTankPosition(miniTank) {
   // Calculate angle towards nearest enemy for shooting
   let nearestEnemy = findNearestEnemies(1)[0];
   if (nearestEnemy && frameCount % 30 === 0) {
-    let bulletAngle = atan2(nearestEnemy.z - miniTank.z, nearestEnemy.x - miniTank.x);
+    let bulletAngle = atan2(
+      nearestEnemy.z - miniTank.z,
+      nearestEnemy.x - miniTank.x
+    );
     bullets.push({
       x: miniTank.x,
       y: 0,
@@ -709,7 +697,7 @@ function updateMiniTankPosition(miniTank) {
       dx: cos(bulletAngle),
       dz: sin(bulletAngle),
       distanceTraveled: 0,
-      fromAlly: true // Mark bullet as from ally
+      fromAlly: true, // Mark bullet as from ally
     });
   }
 }
@@ -821,11 +809,15 @@ function keyReleased() {
 function mouseWheel(event) {
   // Prevent default behavior (page scrolling)
   event.preventDefault();
-  
+
   // Adjust zoom level with mouse wheel when middle mouse is not held
   if (!isMiddleMouseDown) {
     let zoomChange = event.delta > 0 ? 0.01 : -0.01;
-    zoomLevel = constrain(zoomLevel + zoomChange, MIN_ZOOM_LEVEL, MAX_ZOOM_LEVEL);
+    zoomLevel = constrain(
+      zoomLevel + zoomChange,
+      MIN_ZOOM_LEVEL,
+      MAX_ZOOM_LEVEL
+    );
   }
 }
 
@@ -849,17 +841,17 @@ function mouseDragged() {
     // Calculate mouse movement
     let deltaX = mouseX - lastMouseX;
     let deltaY = mouseY - lastMouseY;
-    
+
     // Adjust camera angle based on horizontal movement
     cameraAngle += deltaX * 0.01;
-    
+
     // Adjust camera height based on vertical movement
     cameraHeight = constrain(
       cameraHeight - deltaY * 2,
       MIN_CAMERA_HEIGHT,
       MAX_CAMERA_HEIGHT
     );
-    
+
     // Update last position
     lastMouseX = mouseX;
     lastMouseY = mouseY;
@@ -877,6 +869,14 @@ function castSkill(type, numTargets, sizeFactor, skillSound) {
   // Special handling for ally tanks (type 'g')
   if (type === "g") {
     spawnMiniTank();
+    return;
+  }
+
+  if (type === "h") {
+    waves.push(
+      new Wave(playerX, playerZ, numTargets, SKILL_BASE_SIZE * 5 * sizeFactor)
+    );
+    lastCastTime.h = millis();
     return;
   }
 
@@ -956,13 +956,20 @@ function checkCollisions() {
   for (let i = skills.length - 1; i >= 0; i--) {
     let skill = skills[i];
     // For ally tanks, use fixed size. For other skills, use expanding size
-    let skillSize = skill.type === 'g' ?
-      SKILL_BASE_SIZE * 0.5 : // Fixed size for ally tanks
-      constrain(
-        map(skill.distanceTraveled, 0, SKILL_EXPAND_DISTANCE, 10, SKILL_BASE_SIZE * skill.sizeFactor),
-        10,
-        SKILL_BASE_SIZE * skill.sizeFactor
-      );
+    let skillSize =
+      skill.type === "g"
+        ? SKILL_BASE_SIZE * 0.5 // Fixed size for ally tanks
+        : constrain(
+            map(
+              skill.distanceTraveled,
+              0,
+              SKILL_EXPAND_DISTANCE,
+              10,
+              SKILL_BASE_SIZE * skill.sizeFactor
+            ),
+            10,
+            SKILL_BASE_SIZE * skill.sizeFactor
+          );
 
     for (let j = enemies.length - 1; j >= 0; j--) {
       let enemy = enemies[j];
