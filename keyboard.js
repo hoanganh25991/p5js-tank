@@ -50,7 +50,7 @@ function triggerKeyEvent(keyValue, eventType) {
 
   const event = new KeyboardEvent(eventType, {
     key: keyValue,
-    code: keyValue.startsWith("Arrow")
+    code: keyValue.startsWith("arrow")
       ? keyValue
       : `Key${keyValue.toUpperCase()}`,
     keyCode: keyCodeMap[keyValue],

@@ -165,24 +165,26 @@ function setup() {
   skills.forEach((skill, index) => {
     const y = sliderY + index * sliderSpacing;
     
-    skillSliders[skill].target = createSlider(0, 500, getDefaultTargets(skill));
+    // Target slider (1-100)
+    skillSliders[skill].target = createSlider(1, 100, getDefaultTargets(skill), 1);
     skillSliders[skill].target.position(windowWidth - 220, y);
-    skillSliders[skill].target.style('width', '200px');
+    skillSliders[skill].target.style('width', '160px');
     
-    skillSliders[skill].size = createSlider(0, 500, getDefaultSize(skill));
+    // Size slider (0.1-10)
+    skillSliders[skill].size = createSlider(1, 100, getDefaultSize(skill) * 10, 1);
     skillSliders[skill].size.position(windowWidth - 220, y + 20);
-    skillSliders[skill].size.style('width', '200px');
+    skillSliders[skill].size.style('width', '160px');
   });
 }
 
 function getDefaultTargets(skill) {
   const defaults = { a: 1, s: 3, d: 10, f: 1, g: 1, h: 5 };
-  return defaults[skill] || 1;
+  return Math.min(defaults[skill] || 1, 100);
 }
 
 function getDefaultSize(skill) {
   const defaults = { a: 3, s: 1, d: 1, f: 10, g: 1, h: 5 };
-  return defaults[skill] || 1;
+  return Math.min(defaults[skill] || 1, 10);
 }
 
 function drawGround() {
@@ -319,8 +321,14 @@ function draw() {
   
   Object.keys(skillSliders).forEach((skill, index) => {
     const y = 20 + index * 60;
+    const targetValue = skillSliders[skill].target.value();
+    const sizeValue = (skillSliders[skill].size.value() / 10).toFixed(1);
+    
     text(`Skill ${skill.toUpperCase()} - Targets:`, windowWidth - 230, y + 15);
+    text(targetValue, windowWidth - 50, y + 15);
+    
     text(`Size:`, windowWidth - 230, y + 35);
+    text(sizeValue, windowWidth - 50, y + 35);
   });
   pop();
 }
@@ -616,27 +624,27 @@ function drawCastSkills() {
   let currentTime = millis();
 
   if (casting.a && currentTime - lastCastTime.a >= cooldown.a) {
-    castSkill("a", skillSliders.a.target.value(), skillSliders.a.size.value(), skillSoundMap["a"]);
+    castSkill("a", skillSliders.a.target.value(), skillSliders.a.size.value() / 10, skillSoundMap["a"]);
     lastCastTime.a = currentTime;
   }
   if (casting.s && currentTime - lastCastTime.s >= cooldown.s) {
-    castSkill("s", skillSliders.s.target.value(), skillSliders.s.size.value(), skillSoundMap["s"]);
+    castSkill("s", skillSliders.s.target.value(), skillSliders.s.size.value() / 10, skillSoundMap["s"]);
     lastCastTime.s = currentTime;
   }
   if (casting.d && currentTime - lastCastTime.d >= cooldown.d) {
-    castSkill("d", skillSliders.d.target.value(), skillSliders.d.size.value(), skillSoundMap["d"]);
+    castSkill("d", skillSliders.d.target.value(), skillSliders.d.size.value() / 10, skillSoundMap["d"]);
     lastCastTime.d = currentTime;
   }
   if (casting.f && currentTime - lastCastTime.f >= cooldown.f) {
-    castSkill("f", skillSliders.f.target.value(), skillSliders.f.size.value(), skillSoundMap["f"]);
+    castSkill("f", skillSliders.f.target.value(), skillSliders.f.size.value() / 10, skillSoundMap["f"]);
     lastCastTime.f = currentTime;
   }
   if (casting.g && currentTime - lastCastTime.g >= cooldown.g) {
-    castSkill("g", skillSliders.g.target.value(), skillSliders.g.size.value(), skillSoundMap["g"]);
+    castSkill("g", skillSliders.g.target.value(), skillSliders.g.size.value() / 10, skillSoundMap["g"]);
     lastCastTime.g = currentTime;
   }
   if (casting.h && currentTime - lastCastTime.h >= cooldown.h) {
-    castSkill("h", skillSliders.h.target.value(), skillSliders.h.size.value(), skillSoundMap["h"]);
+    castSkill("h", skillSliders.h.target.value(), skillSliders.h.size.value() / 10, skillSoundMap["h"]);
     lastCastTime.h = currentTime;
   }
 }
