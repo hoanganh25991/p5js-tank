@@ -1,7 +1,17 @@
 // Configuration variables
 
+// Skill parameter sliders
+let skillSliders = {
+  a: { target: null, size: null },
+  s: { target: null, size: null },
+  d: { target: null, size: null },
+  f: { target: null, size: null },
+  g: { target: null, size: null },
+  h: { target: null, size: null }
+};
+
 // Gameplay Mechanics
-const ENEMIES_TO_KILL = 1000; // Number of enemies to kill before pausing
+const ENEMIES_TO_KILL = 1_000_000_000; // Number of enemies to kill before pausing
 const MAX_ENEMIES = 50; // Maximum number of enemies at any time
 
 // Bullet and Skill Properties
@@ -146,6 +156,33 @@ function setup() {
   textSize(32); // Set the text size
   textAlign(CENTER, CENTER); // Align text to center
   zoomLevel = getDynamicZoomLevel();
+
+  // Create sliders for each skill
+  const skills = ['a', 's', 'd', 'f', 'g', 'h'];
+  const sliderY = 20;
+  const sliderSpacing = 60;
+
+  skills.forEach((skill, index) => {
+    const y = sliderY + index * sliderSpacing;
+    
+    skillSliders[skill].target = createSlider(0, 500, getDefaultTargets(skill));
+    skillSliders[skill].target.position(windowWidth - 220, y);
+    skillSliders[skill].target.style('width', '200px');
+    
+    skillSliders[skill].size = createSlider(0, 500, getDefaultSize(skill));
+    skillSliders[skill].size.position(windowWidth - 220, y + 20);
+    skillSliders[skill].size.style('width', '200px');
+  });
+}
+
+function getDefaultTargets(skill) {
+  const defaults = { a: 1, s: 3, d: 10, f: 1, g: 1, h: 5 };
+  return defaults[skill] || 1;
+}
+
+function getDefaultSize(skill) {
+  const defaults = { a: 3, s: 1, d: 1, f: 10, g: 1, h: 5 };
+  return defaults[skill] || 1;
 }
 
 function drawGround() {
@@ -188,6 +225,7 @@ function drawGround() {
 }
 
 function draw() {
+
   if (gamePaused) {
     return;
   }
@@ -268,6 +306,23 @@ function draw() {
   if (frameCount % BULLET_FIRE_INTERVAL === 0) {
     fireBullet();
   }
+
+  // Draw slider labels on top of everything
+  push();
+  camera();
+  ortho();
+  fill(255);
+  noStroke();
+  textAlign(RIGHT);
+  textSize(12);
+  translate(-width/2, -height/2);
+  
+  Object.keys(skillSliders).forEach((skill, index) => {
+    const y = 20 + index * 60;
+    text(`Skill ${skill.toUpperCase()} - Targets:`, windowWidth - 230, y + 15);
+    text(`Size:`, windowWidth - 230, y + 35);
+  });
+  pop();
 }
 
 function getDynamicZoomLevel() {
@@ -561,27 +616,27 @@ function drawCastSkills() {
   let currentTime = millis();
 
   if (casting.a && currentTime - lastCastTime.a >= cooldown.a) {
-    castSkill("a", 1, 3, skillSoundMap["a"]);
+    castSkill("a", skillSliders.a.target.value(), skillSliders.a.size.value(), skillSoundMap["a"]);
     lastCastTime.a = currentTime;
   }
   if (casting.s && currentTime - lastCastTime.s >= cooldown.s) {
-    castSkill("s", 3, 1, skillSoundMap["s"]);
+    castSkill("s", skillSliders.s.target.value(), skillSliders.s.size.value(), skillSoundMap["s"]);
     lastCastTime.s = currentTime;
   }
   if (casting.d && currentTime - lastCastTime.d >= cooldown.d) {
-    castSkill("d", 10, 1, skillSoundMap["d"]);
+    castSkill("d", skillSliders.d.target.value(), skillSliders.d.size.value(), skillSoundMap["d"]);
     lastCastTime.d = currentTime;
   }
   if (casting.f && currentTime - lastCastTime.f >= cooldown.f) {
-    castSkill("f", 1, 10, skillSoundMap["f"]);
+    castSkill("f", skillSliders.f.target.value(), skillSliders.f.size.value(), skillSoundMap["f"]);
     lastCastTime.f = currentTime;
   }
   if (casting.g && currentTime - lastCastTime.g >= cooldown.g) {
-    castSkill("g", 1, 1, skillSoundMap["g"]);
+    castSkill("g", skillSliders.g.target.value(), skillSliders.g.size.value(), skillSoundMap["g"]);
     lastCastTime.g = currentTime;
   }
   if (casting.h && currentTime - lastCastTime.h >= cooldown.h) {
-    castSkill("h", 5, 5, skillSoundMap["h"]);
+    castSkill("h", skillSliders.h.target.value(), skillSliders.h.size.value(), skillSoundMap["h"]);
     lastCastTime.h = currentTime;
   }
 }
