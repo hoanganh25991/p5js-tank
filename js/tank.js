@@ -134,19 +134,19 @@ window.setState = function (newState) {
 };
 
 function preload() {
-  groundTexture = loadImage("rocky_terrain_02_diff_4k.jpg"); // Ground texture
-  tankTexture = loadImage("photo-1539538507524-eab6a4184604.jpg"); // Tank texture
+  groundTexture = loadImage("images/rocky_terrain_02_diff_4k.jpg"); // Ground texture
+  tankTexture = loadImage("images/photo-1539538507524-eab6a4184604.jpg"); // Tank texture
   skillSoundMap = {
-    a: loadSound("steampunk-weapon-single-shot-188051.mp3"),
-    s: loadSound("barrett-m107-sound-effect-245967.mp3"),
-    d: loadSound("gun-shots-from-a-distance-23-39722.mp3"),
-    f: loadSound("gun-shot-sound-effect-224087.mp3"),
-    g: loadSound("surprise-sound-effect-99300.mp3"),
-    h: loadSound("ocean-wave-fast-236009.mp3"),
+    a: loadSound("sounds/steampunk-weapon-single-shot-188051.mp3"),
+    s: loadSound("sounds/barrett-m107-sound-effect-245967.mp3"),
+    d: loadSound("sounds/gun-shots-from-a-distance-23-39722.mp3"),
+    f: loadSound("sounds/gun-shot-sound-effect-224087.mp3"),
+    g: loadSound("sounds/surprise-sound-effect-99300.mp3"),
+    h: loadSound("sounds/ocean-wave-fast-236009.mp3"),
   };
-  myFont = loadFont("opensans-light.ttf");
-  shurikenModel = loadModel("shuriken.obj", true);
-  fireBall = loadModel("fireball.obj", true);
+  myFont = loadFont("fonts/opensans-light.ttf");
+  shurikenModel = loadModel("models/shuriken.obj", true);
+  fireBall = loadModel("models/fireball.obj", true);
 }
 
 function setup() {

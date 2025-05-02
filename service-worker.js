@@ -2,13 +2,12 @@ self.addEventListener("install", function (event) {
   event.waitUntil(
     caches.open("my-pwa-cache").then(function (cache) {
       return cache.addAll([
-        "",
         "index.html",
-        "style.css",
-        "tank.js",
-        "status-board.js",
-        "keyboard.js",
-        "logo.png",
+        "css/style.css",
+        "js/tank.js",
+        "js/status-board.js",
+        "js/keyboard.js",
+        "js/control.js",
       ]);
     })
   );
