@@ -4,6 +4,11 @@
 
 **Tank Battle Game** is a top-down shooter game where players control a tank to destroy enemies. The game is developed using the [p5.js](https://p5js.org/) library, a powerful JavaScript library that makes it easy to create graphical and interactive applications.
 
+![tank](tank-084058-20250503.jpg)
+![tank](tank-084319-20250503.jpg)
+![tank](tank-084150-20250503.jpg)
+![tank](tank-084130-20250503.jpg)
+
 ## Installation
 
 1. **Requirements:**
