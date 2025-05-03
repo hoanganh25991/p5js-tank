@@ -105,7 +105,8 @@ export class Game {
         this.ground = new Ground(this.scene, this.assets.textures.ground);
         
         // Spawn initial enemies
-        this.spawnEnemies(10);
+        this.spawnEnemies(20);
+        console.log(`Spawned ${this.enemies.length} enemies`);
         
         // Start animation loop
         this.animate();
@@ -436,17 +437,21 @@ export class Game {
     castSkill(type, numTargets, sizeFactor) {
         if (this.paused) return;
         
+        console.log(`Casting skill ${type} with ${numTargets} targets and size ${sizeFactor}`);
+        
         // Play skill sound
         this.playSkillSound(type);
         
         // Special handling for ally tanks (type 'g')
         if (type === 'g') {
+            console.log('Spawning mini tank');
             this.spawnMiniTank();
             return;
         }
         
         // Special handling for wave effect (type 'h')
         if (type === 'h') {
+            console.log('Creating wave effect');
             const wave = new Wave(
                 this.scene,
                 this.player.position.x,
@@ -460,11 +465,33 @@ export class Game {
         
         // Original behavior for other skills
         const targets = this.findNearestEnemies(numTargets);
+        console.log(`Found ${targets.length} targets for skill ${type}`);
+        
+        // If no targets found, cast in a random direction
+        if (targets.length === 0) {
+            console.log('No targets found, casting in random direction');
+            const randomAngle = Math.random() * Math.PI * 2;
+            const skill = new Skill(
+                this.scene,
+                this.player.position.x,
+                0,
+                this.player.position.z,
+                Math.cos(randomAngle),
+                Math.sin(randomAngle),
+                type,
+                sizeFactor,
+                this.assets
+            );
+            this.skills.push(skill);
+            return;
+        }
         
         for (const target of targets) {
             const dx = target.position.x - this.player.position.x;
             const dz = target.position.z - this.player.position.z;
             const angle = Math.atan2(dz, dx);
+            
+            console.log(`Casting skill ${type} at target at (${target.position.x}, ${target.position.z})`);
             
             const skill = new Skill(
                 this.scene,
@@ -691,6 +718,10 @@ export class Game {
     
     // Spawn enemies around the player
     spawnEnemies(count = 1) {
+        if (!this.player) return;
+        
+        console.log(`Attempting to spawn ${count} enemies`);
+        
         // Count the number of enemies within the spawn distance
         const enemiesWithinRadius = this.enemies.filter(enemy => {
             const distance = new THREE.Vector2(
@@ -701,11 +732,25 @@ export class Game {
             return distance < Config.ENEMY_SPAWN_DISTANCE;
         }).length;
         
+        console.log(`Current enemies within radius: ${enemiesWithinRadius}`);
+        
         // Spawn new enemies if the count is below the maximum
         let spawned = 0;
-        while (enemiesWithinRadius + spawned < Config.MAX_ENEMIES && spawned < count) {
-            const x = this.player.position.x + (Math.random() * 2 - 1) * Config.ENEMY_SPAWN_DISTANCE;
-            const z = this.player.position.z + (Math.random() * 2 - 1) * Config.ENEMY_SPAWN_DISTANCE;
+        let attempts = 0;
+        const maxAttempts = 100; // Prevent infinite loops
+        
+        while (enemiesWithinRadius + spawned < Config.MAX_ENEMIES && spawned < count && attempts < maxAttempts) {
+            attempts++;
+            
+            // Calculate a random distance between 200 and ENEMY_SPAWN_DISTANCE
+            const spawnDistance = 200 + Math.random() * (Config.ENEMY_SPAWN_DISTANCE - 200);
+            
+            // Calculate a random angle
+            const angle = Math.random() * Math.PI * 2;
+            
+            // Calculate position based on distance and angle
+            const x = this.player.position.x + Math.cos(angle) * spawnDistance;
+            const z = this.player.position.z + Math.sin(angle) * spawnDistance;
             
             // Ensure enemies do not spawn too close to the player
             const distance = new THREE.Vector2(
@@ -713,12 +758,15 @@ export class Game {
                 z - this.player.position.z
             ).length();
             
-            if (distance > Config.TANK_SIZE) {
+            if (distance > Config.TANK_SIZE && distance < Config.ENEMY_SPAWN_DISTANCE) {
                 const enemy = new Enemy(this.scene, x, z);
                 this.enemies.push(enemy);
                 spawned++;
+                console.log(`Spawned enemy at (${x}, ${z}), distance: ${distance}`);
             }
         }
+        
+        console.log(`Successfully spawned ${spawned} enemies after ${attempts} attempts`);
     }
     
     // Get current game state

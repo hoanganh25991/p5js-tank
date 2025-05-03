@@ -159,14 +159,22 @@ export class Skill {
     createMiniTank() {
         // Create tank body
         const bodyGeometry = new THREE.BoxGeometry(30, 10, 30);
-        const bodyMaterial = new THREE.MeshPhongMaterial({ color: 0x00ff00 });
+        const bodyMaterial = new THREE.MeshPhongMaterial({ 
+            color: 0x00ff00,
+            emissive: 0x00ff00,
+            emissiveIntensity: 0.5
+        });
         this.tankBody = new THREE.Mesh(bodyGeometry, bodyMaterial);
         this.tankBody.castShadow = true;
         this.skillGroup.add(this.tankBody);
         
         // Create turret
         const turretGeometry = new THREE.BoxGeometry(15, 5, 15);
-        const turretMaterial = new THREE.MeshPhongMaterial({ color: 0x008800 });
+        const turretMaterial = new THREE.MeshPhongMaterial({ 
+            color: 0x008800,
+            emissive: 0x008800,
+            emissiveIntensity: 0.5
+        });
         this.turret = new THREE.Mesh(turretGeometry, turretMaterial);
         this.turret.position.y = 7.5;
         this.turret.castShadow = true;
@@ -174,12 +182,21 @@ export class Skill {
         
         // Create gun barrel
         const barrelGeometry = new THREE.CylinderGeometry(2, 2, 20);
-        const barrelMaterial = new THREE.MeshPhongMaterial({ color: 0x006600 });
+        const barrelMaterial = new THREE.MeshPhongMaterial({ 
+            color: 0x006600,
+            emissive: 0x006600,
+            emissiveIntensity: 0.5
+        });
         this.barrel = new THREE.Mesh(barrelGeometry, barrelMaterial);
         this.barrel.rotation.x = Math.PI / 2; // Rotate to lie horizontally
         this.barrel.position.set(0, 7.5, -10);
         this.barrel.castShadow = true;
         this.skillGroup.add(this.barrel);
+        
+        // Add a point light to make it more visible
+        const light = new THREE.PointLight(0x00ff00, 1, 100);
+        light.position.set(0, 10, 0);
+        this.skillGroup.add(light);
     }
     
     // Create default skill

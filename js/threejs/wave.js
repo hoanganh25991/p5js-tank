@@ -35,7 +35,7 @@ export class Wave {
             
             const waveMesh = new THREE.Mesh(waveGeometry, waveMaterial);
             waveMesh.rotation.x = -Math.PI / 2; // Rotate to lie flat on the ground
-            waveMesh.position.y = 0.5; // Slightly above ground to avoid z-fighting
+            waveMesh.position.y = 5; // Higher above ground to be visible
             
             this.waveGroups.push({
                 mesh: waveMesh,

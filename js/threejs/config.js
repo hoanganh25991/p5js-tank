@@ -19,7 +19,7 @@ export class Config {
     
     // Enemy Settings
     static ENEMY_SHOOTING_DISTANCE = 500; // Maximum distance for enemies to shoot
-    static ENEMY_SPAWN_DISTANCE = 1500; // Maximum distance for enemies to spawn
+    static ENEMY_SPAWN_DISTANCE = 800; // Maximum distance for enemies to spawn
     
     // Camera Settings
     static MIN_CAMERA_HEIGHT = -500; // Minimum camera height (ground level)
